@@ -13,15 +13,61 @@ export function BioluminescenceBackground() {
       || canvas.getContext('webgl', { alpha: false, antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
     if (!gl) return;
 
+    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+    const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : '';
+    const isIntegrated = /intel|amd.*(rak|ston)|apple (m|a\d)/i.test(renderer) || /mesa|llvmpipe|swiftshader|software/i.test(renderer);
+    if (isIntegrated) {
+      console.warn('Bioluminescence: Running on integrated GPU. For best performance, set Chrome to use your dedicated GPU in NVIDIA/AMD Control Panel.');
+    }
+
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const pixelScale = Math.min(window.devicePixelRatio || 1, 1.5);
+    const pixelScale = isIntegrated ? 0.4 : Math.min(window.devicePixelRatio || 1, 1.5);
 
     const vertSrc = [
       'attribute vec2 a_pos;',
       'void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }'
     ].join('\n');
 
-    const fragSrc = [
+    const fragSrc = (isIntegrated ? [
+      'precision highp float;',
+      'uniform float u_time;',
+      'uniform vec2 u_res;',
+      'uniform float u_glowIntensity;',
+      'uniform float u_waveSpeed;',
+      '',
+      '#define PI 3.14159265359',
+      '',
+      'float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+      '',
+      'float noise(vec2 p) {',
+      '  vec2 i = floor(p); vec2 f = fract(p); f = f*f*(3.-2.*f);',
+      '  return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y);',
+      '}',
+      '',
+      'float fbm(vec2 p) {',
+      '  float v=0.,a=.5;',
+      '  for(int i=0;i<3;i++){v+=a*noise(p);p*=2.03;a*=.49;}',
+      '  return v;',
+      '}',
+      '',
+      'void main() {',
+      '  vec2 uv = gl_FragCoord.xy/u_res;',
+      '  float a = u_res.x/u_res.y;',
+      '  vec2 uva = vec2(uv.x*a, uv.y);',
+      '  float t = u_time*u_waveSpeed;',
+      '  vec3 col = vec3(.017,.011,0);',
+      '  float w = fbm(uva*3.+t*.03);',
+      '  float g = fbm(uva*5.-t*.04);',
+      '  float bio = (w*g + .1*noise(uva*8.+t*.05))*u_glowIntensity;',
+      '  bio = pow(max(bio,0.), 1.3);',
+      '  vec3 bc = mix(vec3(.55,.26,0), vec3(.9,.36,.41), noise(uva*2.+t*.02));',
+      '  col += bc*bio*.7;',
+      '  col += vec3(1,.67,.52)*(.02+.05*noise(uva*10.+t*.2))*u_glowIntensity;',
+      '  col = max(col,0.);',
+      '  col = pow(col, vec3(.95,1,1.02));',
+      '  gl_FragColor = vec4(col, 1.);',
+      '}'
+    ] : [
       'precision highp float;',
       'uniform float u_time;',
       'uniform vec2 u_res;',
@@ -233,7 +279,7 @@ export function BioluminescenceBackground() {
       '',
       '  gl_FragColor = vec4(col, 1.0);',
       '}'
-    ].join('\n');
+    ]).join('\n');
 
     function compile(type: number, src: string) {
       const s = gl!.createShader(type);
