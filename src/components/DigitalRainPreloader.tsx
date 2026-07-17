@@ -15,7 +15,7 @@ export function DigitalRainPreloader() {
   useEffect(() => {
     if (!isVisible) {
       const el = document.getElementById("vault-initial-overlay")
-      if (el) el.remove()
+      if (el) el.style.display = "none"
       return
     }
     sessionStorage.setItem(KEY, "1")
