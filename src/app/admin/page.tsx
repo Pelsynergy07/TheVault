@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Send } from "lucide-react"
+import { ArrowLeft, Send, AlertCircle } from "lucide-react"
 import Link from "next/link"
 
 const questions = [
@@ -24,6 +24,7 @@ export default function AdminPage() {
   const router = useRouter()
   const [form, setForm] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState("")
   const [slug, setSlug] = useState("")
 
   const updateField = (key: string, value: string) => {
@@ -85,7 +86,12 @@ export default function AdminPage() {
 
       if (res.ok) {
         router.push(`/projects/${slug}`)
+      } else {
+        const body = await res.json()
+        setError(body.error ?? "Failed to save project")
       }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong")
     } finally {
       setSubmitting(false)
     }
@@ -135,7 +141,14 @@ export default function AdminPage() {
           ))}
         </div>
 
-        <div className="mt-12">
+        {error && (
+        <div className="mt-8 flex items-start gap-3 p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+          <AlertCircle size={16} className="shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      <div className="mt-12">
           <button
             onClick={handleSubmit}
             disabled={submitting || !form.title}

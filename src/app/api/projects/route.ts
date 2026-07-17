@@ -12,7 +12,8 @@ export async function POST(request: Request) {
     const data = (await request.json()) as Project
     await saveProject(data)
     return NextResponse.json({ success: true, slug: data.slug })
-  } catch {
-    return NextResponse.json({ error: "Failed to save project" }, { status: 500 })
+  } catch (err) {
+    console.error("POST /api/projects error:", err)
+    return NextResponse.json({ error: String(err) }, { status: 500 })
   }
 }
