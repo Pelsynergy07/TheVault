@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Send, AlertCircle } from "lucide-react"
+import { ArrowLeft, Send, AlertCircle, FileJson, X } from "lucide-react"
 import Link from "next/link"
 
 const questions = [
@@ -26,6 +26,45 @@ export default function AdminPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
   const [slug, setSlug] = useState("")
+  const [showJsonImport, setShowJsonImport] = useState(false)
+  const [jsonInput, setJsonInput] = useState("")
+  const [jsonError, setJsonError] = useState("")
+  const jsonRef = useRef<HTMLTextAreaElement>(null)
+
+  const handleJsonImport = () => {
+    setJsonError("")
+    try {
+      const data = JSON.parse(jsonInput)
+      const newForm: Record<string, string> = {}
+
+      if (data.title) {
+        newForm.title = data.title
+        setSlug(
+          data.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, ""),
+        )
+      }
+      if (data.tagline) newForm.tagline = data.tagline
+      if (data.questionnaire?.problem) newForm.problem = data.questionnaire.problem
+      if (data.questionnaire?.whyMattered) newForm.whyMattered = data.questionnaire.whyMattered
+      if (data.questionnaire?.howBuilt) newForm.howBuilt = data.questionnaire.howBuilt
+      if (data.questionnaire?.biggestChallenge) newForm.biggestChallenge = data.questionnaire.biggestChallenge
+      if (data.questionnaire?.outcome) newForm.outcome = data.questionnaire.outcome
+      if (data.questionnaire?.improveNext) newForm.improveNext = data.questionnaire.improveNext
+      if (data.status) newForm.status = data.status
+      if (Array.isArray(data.tags)) newForm.tags = data.tags.join(", ")
+      if (data.links?.demo) newForm.demoUrl = data.links.demo
+      if (data.links?.github) newForm.githubUrl = data.links.github
+
+      setForm((prev) => ({ ...prev, ...newForm }))
+      setShowJsonImport(false)
+      setJsonInput("")
+    } catch {
+      setJsonError("Invalid JSON. Please check the format and try again.")
+    }
+  }
 
   const updateField = (key: string, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -111,9 +150,59 @@ export default function AdminPage() {
         <h1 className="text-3xl sm:text-4xl font-medium tracking-tight text-foreground mb-2">
           New Experiment
         </h1>
-        <p className="text-sm text-muted-foreground mb-12">
-          Answer the questions below. A structured project page will be generated automatically.
+        <p className="text-sm text-muted-foreground mb-6">
+          Answer the questions below, or paste a JSON export from ChatGPT.
         </p>
+
+        <div className="mb-10">
+          {!showJsonImport ? (
+            <button
+              onClick={() => setShowJsonImport(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-mono text-muted-foreground/70 border border-border/30 hover:border-accent/30 hover:text-foreground transition-colors"
+            >
+              <FileJson size={14} />
+              Import from JSON
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-muted-foreground/70">Paste the JSON from ChatGPT below</span>
+                <button
+                  onClick={() => { setShowJsonImport(false); setJsonError(""); setJsonInput("") }}
+                  className="text-xs font-mono text-muted-foreground/50 hover:text-foreground transition-colors"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+              <textarea
+                ref={jsonRef}
+                value={jsonInput}
+                onChange={(e) => setJsonInput(e.target.value)}
+                placeholder='{"title": "...", "tagline": "...", ...}'
+                rows={8}
+                className="w-full px-4 py-3 text-xs font-mono bg-surface backdrop-blur-sm border border-border/50 text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-accent/30 transition-colors duration-300 resize-vertical"
+              />
+              {jsonError && (
+                <p className="text-xs text-red-400">{jsonError}</p>
+              )}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleJsonImport}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-mono bg-accent text-accent-foreground hover:bg-accent/90 transition-colors"
+                >
+                  <FileJson size={12} />
+                  Import
+                </button>
+                <button
+                  onClick={() => { setForm({}); setSlug("") }}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-mono text-muted-foreground/70 border border-border/30 hover:border-red-400/30 hover:text-red-400 transition-colors"
+                >
+                  Clear All Fields
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="space-y-8">
           {questions.map((q) => (
