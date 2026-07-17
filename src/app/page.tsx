@@ -3,6 +3,8 @@ import { BioluminescenceBackground } from "@/components/webgl/BioluminescenceBac
 import { DigitalRainPreloader } from "@/components/DigitalRainPreloader"
 import { getAllProjects } from "@/lib/projects"
 
+export const dynamic = "force-dynamic"
+
 export default async function Home() {
   const projects = await getAllProjects()
 
