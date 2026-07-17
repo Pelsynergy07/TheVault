@@ -7,13 +7,12 @@ import Link from "next/link"
 
 const questions = [
   { key: "title", label: "Project Title", placeholder: "e.g. Neural Canvas" },
-  { key: "tagline", label: "One-line tagline", placeholder: "e.g. AI-powered generative art in real-time" },
-  { key: "problem", label: "What problem were you solving?", placeholder: "Describe the problem or gap..." },
-  { key: "whyMattered", label: "Why did it matter?", placeholder: "Why was this important to solve?" },
-  { key: "howBuilt", label: "How did you build it?", placeholder: "Tech stack, approach, timeline..." },
-  { key: "biggestChallenge", label: "What was the biggest technical challenge?", placeholder: "The hardest engineering problem you faced..." },
-  { key: "outcome", label: "What was the outcome or impact?", placeholder: "Results, metrics, learnings..." },
-  { key: "improveNext", label: "What would you improve next?", placeholder: "If you rebuilt it today, what would you change?" },
+  { key: "tagline", label: "Tagline (quick summary)", placeholder: "e.g. AI-powered generative art in real-time", big: true, rows: 2 },
+  { key: "problem", label: "The problem I was trying to solve for", placeholder: "Describe the problem or gap..." },
+  { key: "approach", label: "My approach to solving this", placeholder: "Tech stack, approach, timeline..." },
+  { key: "biggestChallenge", label: "Biggest challenge", placeholder: "The hardest engineering problem you faced..." },
+  { key: "outcome", label: "Outcome", placeholder: "Results, metrics, learnings..." },
+  { key: "skills", label: "Skills unlocked", placeholder: "What did you learn or get better at?" },
   { key: "status", label: "Project Status", placeholder: "Production, Live, Prototype, Internal, or Hackathon" },
   { key: "tags", label: "Tags (comma-separated)", placeholder: "e.g. AI, 3D, WebGL" },
   { key: "demoUrl", label: "Live Demo URL", placeholder: "https://..." },
@@ -49,10 +48,11 @@ export default function AdminPage() {
       if (data.tagline) newForm.tagline = data.tagline
       if (data.questionnaire?.problem) newForm.problem = data.questionnaire.problem
       if (data.questionnaire?.whyMattered) newForm.whyMattered = data.questionnaire.whyMattered
-      if (data.questionnaire?.howBuilt) newForm.howBuilt = data.questionnaire.howBuilt
+      if (data.questionnaire?.howBuilt) newForm.approach = data.questionnaire.howBuilt
+      if (data.biggestChallenge) newForm.biggestChallenge = data.biggestChallenge
       if (data.questionnaire?.biggestChallenge) newForm.biggestChallenge = data.questionnaire.biggestChallenge
       if (data.questionnaire?.outcome) newForm.outcome = data.questionnaire.outcome
-      if (data.questionnaire?.improveNext) newForm.improveNext = data.questionnaire.improveNext
+      if (data.questionnaire?.improveNext) newForm.skills = data.questionnaire.improveNext
       if (data.status) newForm.status = data.status
       if (Array.isArray(data.tags)) newForm.tags = data.tags.join(", ")
       if (data.links?.demo) newForm.demoUrl = data.links.demo
@@ -99,19 +99,19 @@ export default function AdminPage() {
         },
         slides: [
           { id: "problem", title: "The Problem", type: "problem", content: form.problem ?? "" },
-          { id: "why", title: "Why It Mattered", type: "why", content: form.whyMattered ?? "" },
-          { id: "solution", title: "How I Built It", type: "solution", content: form.howBuilt ?? "" },
-          { id: "architecture", title: "Technical Challenge", type: "architecture", content: form.biggestChallenge ?? "" },
-          { id: "results", title: "Outcome & Impact", type: "results", content: form.outcome ?? "" },
-          { id: "learnings", title: "What I'd Improve", type: "learnings", content: form.improveNext ?? "" },
+          { id: "why", title: "Why It Mattered", type: "why", content: form.problem ?? "" },
+          { id: "solution", title: "My Approach", type: "solution", content: form.approach ?? "" },
+          { id: "architecture", title: "Biggest Challenge", type: "architecture", content: form.biggestChallenge ?? "" },
+          { id: "results", title: "Outcome", type: "results", content: form.outcome ?? "" },
+          { id: "learnings", title: "Skills Unlocked", type: "learnings", content: form.skills ?? "" },
         ],
         questionnaire: {
           problem: form.problem ?? "",
-          whyMattered: form.whyMattered ?? "",
-          howBuilt: form.howBuilt ?? "",
+          whyMattered: form.problem ?? "",
+          howBuilt: form.approach ?? "",
           biggestChallenge: form.biggestChallenge ?? "",
           outcome: form.outcome ?? "",
-          improveNext: form.improveNext ?? "",
+          improveNext: form.skills ?? "",
         },
         date: new Date().toISOString().split("T")[0],
         featured: false,
@@ -208,13 +208,13 @@ export default function AdminPage() {
           {questions.map((q) => (
             <div key={q.key}>
               <label className="block text-sm font-mono text-foreground/80 mb-2">{q.label}</label>
-              {q.key === "problem" || q.key === "whyMattered" || q.key === "howBuilt" ||
-               q.key === "biggestChallenge" || q.key === "outcome" || q.key === "improveNext" ? (
+              {q.big || q.key === "problem" || q.key === "approach" ||
+               q.key === "biggestChallenge" || q.key === "outcome" || q.key === "skills" ? (
                 <textarea
                   value={form[q.key] ?? ""}
                   onChange={(e) => updateField(q.key, e.target.value)}
                   placeholder={q.placeholder}
-                  rows={4}
+                  rows={q.rows ?? 4}
                   className="w-full px-4 py-3 text-sm bg-surface backdrop-blur-sm border border-border/50 text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-accent/30 transition-colors duration-300 resize-vertical"
                 />
               ) : (

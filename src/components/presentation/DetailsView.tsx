@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Code2, Save, X, Globe, Pencil, Check } from "lucide-react"
+import { Code2, Save, X, Globe, Pencil, Check, Trash2 } from "lucide-react"
 import type { Project, ProjectTag, ProjectStatus } from "@/types"
 
 const ALL_TAGS: ProjectTag[] = [
@@ -33,6 +33,8 @@ export function DetailsView({
   const [editLinks, setEditLinks] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const hasChanges =
     formData.title !== project.title ||
@@ -58,6 +60,16 @@ export function DetailsView({
       ...prev,
       slides: prev.slides.map((s) => (s.id === id ? { ...s, content } : s)),
     }))
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/projects/${project.slug}`, { method: "DELETE" })
+      if (res.ok) onClose()
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const handleSave = async () => {
@@ -102,6 +114,32 @@ export function DetailsView({
             {formData.status}
           </span>
         </div>
+        {confirmDelete ? (
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-mono text-red-400">Delete this project?</span>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="px-3 py-1.5 text-[10px] font-mono bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-30"
+            >
+              {deleting ? "Deleting..." : "Confirm"}
+            </button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              className="px-3 py-1.5 text-[10px] font-mono text-white/40 border border-white/10 hover:text-white hover:border-white/30 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="p-2 text-white/30 hover:text-red-400 transition-colors bg-white/5 hover:bg-red-500/10"
+            aria-label="Delete project"
+          >
+            <Trash2 size={14} />
+          </button>
+        )}
         <button
           onClick={onClose}
           className="p-2 text-white/50 hover:text-white transition-colors bg-white/5 hover:bg-white/10"

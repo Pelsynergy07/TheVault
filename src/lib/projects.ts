@@ -56,6 +56,11 @@ export async function saveProject(project: Project): Promise<void> {
   if (error) throw new Error(error.message)
 }
 
+export async function deleteProject(slug: string): Promise<void> {
+  const { error } = await supabase.from("projects").delete().eq("slug", slug)
+  if (error) throw new Error(error.message)
+}
+
 export async function saveProjectOrder(slugs: string[]): Promise<void> {
   const { error } = await supabase
     .from("project_order")
