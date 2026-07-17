@@ -114,32 +114,6 @@ export function DetailsView({
             {formData.status}
           </span>
         </div>
-        {confirmDelete ? (
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-red-400">Delete this project?</span>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="px-3 py-1.5 text-[10px] font-mono bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-30"
-            >
-              {deleting ? "Deleting..." : "Confirm"}
-            </button>
-            <button
-              onClick={() => setConfirmDelete(false)}
-              className="px-3 py-1.5 text-[10px] font-mono text-white/40 border border-white/10 hover:text-white hover:border-white/30 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setConfirmDelete(true)}
-            className="p-2 text-white/30 hover:text-red-400 transition-colors bg-white/5 hover:bg-red-500/10"
-            aria-label="Delete project"
-          >
-            <Trash2 size={14} />
-          </button>
-        )}
         <button
           onClick={onClose}
           className="p-2 text-white/50 hover:text-white transition-colors bg-white/5 hover:bg-white/10"
@@ -253,14 +227,40 @@ export function DetailsView({
         <section className="space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-mono tracking-widest text-white/50 uppercase">Information</h3>
-            <button
-              onClick={handleSave}
-              disabled={!hasChanges || saving}
-              className="flex items-center gap-2 px-5 py-2.5 text-xs font-medium bg-white text-black hover:bg-white/90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              {saved ? <Check size={14} /> : <Save size={14} />}
-              {saving ? "Saving..." : saved ? "Saved" : "Save Changes"}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleSave}
+                disabled={!hasChanges || saving}
+                className="flex items-center gap-2 px-5 py-2.5 text-xs font-medium bg-white text-black hover:bg-white/90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                {saved ? <Check size={14} /> : <Save size={14} />}
+                {saving ? "Saving..." : saved ? "Saved" : "Save Changes"}
+              </button>
+              {confirmDelete ? (
+                <>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="px-3 py-2.5 text-xs font-mono bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-30"
+                  >
+                    {deleting ? "Deleting..." : "Confirm"}
+                  </button>
+                  <button
+                    onClick={() => setConfirmDelete(false)}
+                    className="px-3 py-2.5 text-xs font-mono text-white/40 border border-white/10 hover:text-white transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => setConfirmDelete(true)}
+                  className="px-3 py-2.5 text-xs font-mono text-red-400/60 border border-red-400/20 hover:text-red-400 hover:border-red-400/40 transition-colors"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
