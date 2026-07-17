@@ -9,8 +9,8 @@ export function BioluminescenceBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = canvas.getContext('webgl2', { alpha: true, antialias: false, preserveDrawingBuffer: false, powerPreference: 'high-performance' }) 
-      || canvas.getContext('webgl', { alpha: true, antialias: false, preserveDrawingBuffer: false, powerPreference: 'high-performance' });
+    const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' }) 
+      || canvas.getContext('webgl', { alpha: false, antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
     if (!gl) return;
 
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -297,6 +297,7 @@ export function BioluminescenceBackground() {
       gl!.uniform1f(uGlowIntensity, glowIntensityVal);
       gl!.uniform1f(uWaveSpeed, waveSpeedVal);
       gl!.uniform2f(uMouse, mouseXVal, mouseYVal);
+      gl!.clear(gl!.COLOR_BUFFER_BIT);
       gl!.drawArrays(gl!.TRIANGLES, 0, 3);
       animationFrameId = requestAnimationFrame(render);
     }
