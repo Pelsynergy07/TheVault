@@ -1,73 +1,66 @@
-import fs from "fs"
-import path from "path"
+import { supabase } from "./supabase"
 import type { Project } from "@/types"
 
-const projectsDirectory = path.join(process.cwd(), "content", "projects")
-const orderFilePath = path.join(process.cwd(), "content", "order.json")
+export async function getAllProjects(): Promise<Project[]> {
+  const { data: orderRow } = await supabase
+    .from("project_order")
+    .select("slugs")
+    .eq("id", 1)
+    .single()
 
-function readOrder(): string[] {
-  try {
-    if (fs.existsSync(orderFilePath)) {
-      const raw = fs.readFileSync(orderFilePath, "utf-8")
-      return JSON.parse(raw) as string[]
-    }
-  } catch {}
-  return []
-}
+  const orderMap = new Map<string, number>()
+  const order = (orderRow?.slugs as string[]) ?? []
+  order.forEach((slug, i) => orderMap.set(slug, i))
 
-function saveOrderToFile(slugs: string[]): void {
-  fs.writeFileSync(orderFilePath, JSON.stringify(slugs, null, 2), "utf-8")
-}
+  const { data: rows } = await supabase
+    .from("projects")
+    .select("data")
+    .order("created_at", { ascending: true })
 
-export function getAllProjects(): Project[] {
-  if (!fs.existsSync(projectsDirectory)) return []
+  const projects = ((rows ?? []).map((r) => r.data) as Project[]).filter(Boolean)
 
-  const fileNames = fs.readdirSync(projectsDirectory)
-  const projects = fileNames
-    .filter((fn) => fn.endsWith(".json"))
-    .map((fn) => {
-      const fullPath = path.join(projectsDirectory, fn)
-      const raw = fs.readFileSync(fullPath, "utf-8")
-      return JSON.parse(raw) as Project
-    })
-
-  const order = readOrder()
-  if (order.length > 0) {
-    projects.sort((a, b) => {
-      const ai = order.indexOf(a.slug)
-      const bi = order.indexOf(b.slug)
-      if (ai === -1 && bi === -1) return 0
-      if (ai === -1) return 1
-      if (bi === -1) return -1
-      return ai - bi
-    })
-  } else {
-    projects.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-  }
+  projects.sort((a, b) => {
+    const ai = orderMap.get(a.slug)
+    const bi = orderMap.get(b.slug)
+    if (ai === undefined && bi === undefined) return 0
+    if (ai === undefined) return 1
+    if (bi === undefined) return -1
+    return ai - bi
+  })
 
   return projects
 }
 
-export function saveProjectOrder(slugs: string[]): void {
-  saveOrderToFile(slugs)
+export async function getProjectBySlug(slug: string): Promise<Project | null> {
+  const { data } = await supabase
+    .from("projects")
+    .select("data")
+    .eq("slug", slug)
+    .single()
+
+  return (data?.data as Project) ?? null
 }
 
-export function getProjectBySlug(slug: string): Project | null {
-  const projects = getAllProjects()
-  return projects.find((p) => p.slug === slug) ?? null
-}
-
-export function getAllTags(): string[] {
-  const projects = getAllProjects()
+export async function getAllTags(): Promise<string[]> {
+  const projects = await getAllProjects()
   const tags = new Set<string>()
   projects.forEach((p) => p.tags.forEach((t) => tags.add(t)))
   return Array.from(tags).sort()
 }
 
-export function saveProject(project: Project): void {
-  if (!fs.existsSync(projectsDirectory)) {
-    fs.mkdirSync(projectsDirectory, { recursive: true })
-  }
-  const filePath = path.join(projectsDirectory, `${project.slug}.json`)
-  fs.writeFileSync(filePath, JSON.stringify(project, null, 2), "utf-8")
+export async function saveProject(project: Project): Promise<void> {
+  const { error } = await supabase.from("projects").upsert(
+    { slug: project.slug, data: project },
+    { onConflict: "slug" },
+  )
+  if (error) throw new Error(error.message)
+}
+
+export async function saveProjectOrder(slugs: string[]): Promise<void> {
+  const { error } = await supabase
+    .from("project_order")
+    .update({ slugs })
+    .eq("id", 1)
+
+  if (error) throw new Error(error.message)
 }

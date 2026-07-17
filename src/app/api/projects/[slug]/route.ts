@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params
-  const project = getProjectBySlug(slug)
+  const project = await getProjectBySlug(slug)
   if (!project) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
