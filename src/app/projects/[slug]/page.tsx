@@ -51,7 +51,7 @@ export default function ProjectPage() {
       {viewMode === "presentation" ? (
         <PresentationView project={project} onClose={() => router.push("/")} />
       ) : (
-        <DetailsView project={project} onClose={() => router.push("/")} />
+        <DetailsView project={project} onClose={() => router.push("/")} onUpdate={setProject} />
       )}
       
       {/* View Toggle Floating Button */}

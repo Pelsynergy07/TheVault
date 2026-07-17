@@ -14,9 +14,11 @@ const STATUS_OPTIONS: ProjectStatus[] = ["Production", "Live", "Prototype", "Int
 export function DetailsView({
   project,
   onClose,
+  onUpdate,
 }: {
   project: Project
   onClose: () => void
+  onUpdate?: (project: Project) => void
 }) {
   const [formData, setFormData] = useState({
     title: project.title,
@@ -105,28 +107,50 @@ export function DetailsView({
     setJsonError("")
     setJsonSaving(true)
     try {
-      const parsed = JSON.parse(jsonText) as Project
+      const parsed = JSON.parse(jsonText)
+
+      if (!parsed.title) {
+        setJsonError("Missing required field: title")
+        setJsonSaving(false)
+        return
+      }
+
+      if (!parsed.slug) {
+        parsed.slug = parsed.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "")
+      }
+      if (!parsed.date) parsed.date = new Date().toISOString().split("T")[0]
+      if (!parsed.questionnaire) parsed.questionnaire = {}
+      if (!parsed.slides) parsed.slides = []
+      if (!parsed.tags) parsed.tags = []
+      if (!parsed.links) parsed.links = {}
+      if (parsed.featured === undefined) parsed.featured = false
+
       const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: jsonText,
+        body: JSON.stringify(parsed),
       })
       if (res.ok) {
+        const updated = parsed as Project
         setFormData({
-          title: parsed.title,
-          tagline: parsed.tagline,
-          description: parsed.description,
-          status: parsed.status,
-          tags: [...parsed.tags],
-          slides: parsed.slides.map((s) => ({ id: s.id, content: s.content })),
+          title: updated.title,
+          tagline: updated.tagline ?? "",
+          description: updated.description ?? "",
+          status: updated.status ?? "Prototype",
+          tags: [...(updated.tags ?? [])],
+          slides: (updated.slides ?? []).map((s: { id: string; content: string }) => ({ id: s.id, content: s.content })),
         })
         setLinks({
-          demo: parsed.links?.demo ?? "",
-          github: parsed.links?.github ?? "",
+          demo: updated.links?.demo ?? "",
+          github: updated.links?.github ?? "",
         })
         setShowJson(false)
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
+        onUpdate?.(updated)
       } else {
         const body = await res.json()
         setJsonError(body.error ?? "Failed to save")
@@ -165,6 +189,7 @@ export function DetailsView({
       if (res.ok) {
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
+        onUpdate?.(updated)
       }
     } finally {
       setSaving(false)
