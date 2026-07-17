@@ -63,15 +63,11 @@ export function ProjectGrid({ projects }: { projects: Project[] }) {
             layout
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pointer-events-auto auto-rows-[360px]"
           >
-            {sorted.map((project, i) => {
-              const isLarge = i % 5 === 0 || i % 5 === 3
-              const spanClass = isLarge ? "md:col-span-2" : "col-span-1"
-              return (
-                <div key={project.slug} className={spanClass}>
-                  <ProjectCard project={project} index={i} />
-                </div>
-              )
-            })}
+            {sorted.map((project, i) => (
+              <div key={project.slug} className="col-span-1">
+                <ProjectCard project={project} index={i} />
+              </div>
+            ))}
           </motion.div>
         </SortableContext>
       </DndContext>

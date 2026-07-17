@@ -120,7 +120,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
               {project.title}
             </h3>
             {plainDescription && (
-              <p className="text-sm text-white/50 leading-relaxed font-sans line-clamp-3">
+              <p className="text-base text-white/50 leading-relaxed font-sans line-clamp-3">
                 {plainDescription}
               </p>
             )}
