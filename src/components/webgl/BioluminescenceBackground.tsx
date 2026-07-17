@@ -9,7 +9,7 @@ export function BioluminescenceBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' }) 
+    const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' })
       || canvas.getContext('webgl', { alpha: false, antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
     if (!gl) return;
 
@@ -17,269 +17,74 @@ export function BioluminescenceBackground() {
     const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : '';
     const isIntegrated = /intel|amd.*(rak|ston)|apple (m|a\d)/i.test(renderer) || /mesa|llvmpipe|swiftshader|software/i.test(renderer);
     if (isIntegrated) {
-      console.warn('Bioluminescence: Running on integrated GPU. For best performance, set Chrome to use your dedicated GPU in NVIDIA/AMD Control Panel.');
+      console.warn('FluidAmber: Running on integrated GPU. For best performance, set Chrome to use your dedicated GPU in NVIDIA/AMD Control Panel.');
     }
 
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const pixelScale = isIntegrated ? 0.4 : Math.min(window.devicePixelRatio || 1, 1.5);
+    const dpr = isIntegrated ? 0.5 : Math.min(window.devicePixelRatio || 1, 1.5);
 
     const vertSrc = [
       'attribute vec2 a_pos;',
       'void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }'
     ].join('\n');
 
-    const fragSrc = (isIntegrated ? [
+    const fragSrc = [
       'precision highp float;',
       'uniform float u_time;',
       'uniform vec2 u_res;',
-      'uniform float u_glowIntensity;',
-      'uniform float u_waveSpeed;',
       '',
-      '#define PI 3.14159265359',
+      'vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }',
+      'vec2 mod289v2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }',
+      'vec3 permute(vec3 x) { return mod289(((x * 34.0) + 1.0) * x); }',
       '',
-      'float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
-      '',
-      'float noise(vec2 p) {',
-      '  vec2 i = floor(p); vec2 f = fract(p); f = f*f*(3.-2.*f);',
-      '  return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y);',
+      'float snoise(vec2 v) {',
+      '  const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);',
+      '  vec2 i = floor(v + dot(v, C.yy));',
+      '  vec2 x0 = v - i + dot(i, C.xx);',
+      '  vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);',
+      '  vec4 x12 = x0.xyxy + C.xxzz;',
+      '  x12.xy -= i1;',
+      '  i = mod289v2(i);',
+      '  vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));',
+      '  vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);',
+      '  m = m * m; m = m * m;',
+      '  vec3 x = 2.0 * fract(p * C.www) - 1.0;',
+      '  vec3 h = abs(x) - 0.5;',
+      '  vec3 ox = floor(x + 0.5);',
+      '  vec3 a0 = x - ox;',
+      '  m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);',
+      '  vec3 g;',
+      '  g.x = a0.x * x0.x + h.x * x0.y;',
+      '  g.yz = a0.yz * x12.xz + h.yz * x12.yw;',
+      '  return 130.0 * dot(m, g);',
       '}',
       '',
-      'float fbm(vec2 p) {',
-      '  float v=0.,a=.5;',
-      '  for(int i=0;i<3;i++){v+=a*noise(p);p*=2.03;a*=.49;}',
-      '  return v;',
-      '}',
-      '',
-      'void main() {',
-      '  vec2 uv = gl_FragCoord.xy/u_res;',
-      '  float a = u_res.x/u_res.y;',
-      '  vec2 uva = vec2(uv.x*a, uv.y);',
-      '  float t = u_time*u_waveSpeed;',
-      '  vec3 col = vec3(.017,.011,0);',
-      '  float w = fbm(uva*3.+t*.03);',
-      '  float g = fbm(uva*5.-t*.04);',
-      '  float bio = (w*g + .1*noise(uva*8.+t*.05))*u_glowIntensity;',
-      '  bio = pow(max(bio,0.), 1.3);',
-      '  vec3 bc = mix(vec3(.55,.26,0), vec3(.9,.36,.41), noise(uva*2.+t*.02));',
-      '  col += bc*bio*.7;',
-      '  col += vec3(1,.67,.52)*(.02+.05*noise(uva*10.+t*.2))*u_glowIntensity;',
-      '  col = max(col,0.);',
-      '  col = pow(col, vec3(.95,1,1.02));',
-      '  gl_FragColor = vec4(col, 1.);',
-      '}'
-    ] : [
-      'precision highp float;',
-      'uniform float u_time;',
-      'uniform vec2 u_res;',
-      'uniform float u_glowIntensity;',
-      'uniform float u_waveSpeed;',
-      'uniform vec2 u_mouse;',
-      '',
-      '#define PI 3.14159265359',
-      '#define TAU 6.28318530718',
-      '',
-      'float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
-      'float hash1(float n) { return fract(sin(n) * 43758.5453123); }',
-      '',
-      'float noise(vec2 p) {',
-      '  vec2 i = floor(p);',
-      '  vec2 f = fract(p);',
-      '  f = f * f * (3.0 - 2.0 * f);',
-      '  float a = hash(i);',
-      '  float b = hash(i + vec2(1.0, 0.0));',
-      '  float c = hash(i + vec2(0.0, 1.0));',
-      '  float d = hash(i + vec2(1.0, 1.0));',
-      '  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);',
-      '}',
-      '',
-      'float fbm(vec2 p, int octaves) {',
-      '  float val = 0.0;',
-      '  float amp = 0.5;',
-      '  float freq = 1.0;',
+      'float fbm(vec2 p, float t) {',
+      '  float val = 0.0, amp = 0.5, freq = 1.0;',
       '  for (int i = 0; i < 5; i++) {',
-      '    val += amp * noise(p * freq);',
-      '    freq *= 2.03;',
-      '    amp *= 0.49;',
-      '    p += vec2(1.7, 9.2);',
+      '    val += amp * snoise(p * freq + t * 0.3);',
+      '    freq *= 2.1; amp *= 0.48; p += vec2(1.7, 9.2);',
       '  }',
       '  return val;',
       '}',
       '',
-      'float warpedNoise(vec2 p, float t) {',
-      '  vec2 q = vec2(',
-      '    fbm(p + vec2(0.0, 0.0) + t * 0.04, 2),',
-      '    fbm(p + vec2(5.2, 1.3) + t * 0.03, 2)',
-      '  );',
-      '  vec2 r = vec2(',
-      '    fbm(p + 3.0 * q + vec2(1.7, 9.2) + t * 0.05, 2),',
-      '    fbm(p + 3.0 * q + vec2(8.3, 2.8) + t * 0.04, 2)',
-      '  );',
-      '  return fbm(p + 2.5 * r, 3);',
-      '}',
-      '',
-      'vec2 oceanWaves(vec2 p, float t) {',
-      '  float h = 0.0;',
-      '  float d = 0.0;',
-      '  float amp = 1.0;',
-      '  float freq = 1.0;',
-      '',
-      '  for (int i = 0; i < 4; i++) {',
-      '    float fi = float(i);',
-      '    float angle = fi * 0.7 + 0.3;',
-      '    vec2 dir = vec2(cos(angle), sin(angle));',
-      '    float phase = dot(p * freq, dir) + t * (0.6 + fi * 0.15);',
-      '    float wave = sin(phase) * 0.5 + 0.5;',
-      '    float sharpWave = pow(wave, 1.5);',
-      '    h += sharpWave * amp;',
-      '    d += pow(wave, 3.0) * amp;',
-      '    amp *= 0.55;',
-      '    freq *= 1.8;',
-      '  }',
-      '  return vec2(h, d);',
-      '}',
-      '',
-      'float waveBreak(vec2 uv, float t) {',
-      '  float breaks = 0.0;',
-      '  for (int i = 0; i < 2; i++) {',
-      '    float fi = float(i);',
-      '    float y_center = 0.1 + fi * 0.22;',
-      '    float wave_x = uv.x * (2.0 + fi * 0.8) + t * (0.15 + fi * 0.05);',
-      '    float undulation = sin(wave_x) * 0.03 + sin(wave_x * 2.3 + fi) * 0.015;',
-      '    float dist_to_wave = abs(uv.y - y_center - undulation);',
-      '    float breakLine = smoothstep(0.03, 0.0, dist_to_wave);',
-      '    float modulation = noise(vec2(uv.x * 3.0 + fi * 10.0, t * 0.2 + fi));',
-      '    modulation = smoothstep(0.35, 0.7, modulation);',
-      '    breaks += breakLine * modulation * (1.0 - fi * 0.2);',
-      '  }',
-      '  return breaks;',
-      '}',
-      '',
-      'float bioGlow(vec2 uv, float t) {',
-      '  float glow = 0.0;',
-      '  vec2 wv = oceanWaves(uv * 3.0, t * 0.8);',
-      '  float disturbance = wv.y;',
-      '  float organic1 = warpedNoise(uv * 4.0 + vec2(t * 0.06, t * 0.04), t * 0.5);',
-      '  float organic2 = warpedNoise(uv * 6.0 + vec2(-t * 0.05, t * 0.07), t * 0.4);',
-      '  glow += organic1 * disturbance * 0.8;',
-      '  glow += organic2 * pow(disturbance, 2.0) * 0.5;',
-      '  vec2 eddy_uv = uv * 5.0 + vec2(t * 0.08, t * 0.05);',
-      '  float eddy = fbm(eddy_uv, 6);',
-      '  float eddy_curl = abs(eddy - fbm(eddy_uv + vec2(0.01, 0.0), 6)) * 80.0;',
-      '  glow += eddy_curl * disturbance * 0.3;',
-      '  for (int i = 0; i < 3; i++) {',
-      '    float fi = float(i);',
-      '    vec2 center = vec2(hash1(fi * 13.7 + 1.0) * 1.6 - 0.3, hash1(fi * 7.3 + 2.0) * 1.2 - 0.1);',
-      '    center.x += sin(t * 0.05 + fi * 2.0) * 0.15;',
-      '    center.y += cos(t * 0.04 + fi * 1.5) * 0.08;',
-      '    float d = length(uv - center);',
-      '    float cluster = exp(-d * d / (0.015 + hash1(fi * 3.1) * 0.02));',
-      '    float pulse = sin(t * (0.3 + fi * 0.1) + fi * 4.0) * 0.5 + 0.5;',
-      '    glow += cluster * pulse * disturbance * 1.5;',
-      '  }',
-      '  return glow;',
-      '}',
-      '',
-      'float planktonSparks(vec2 uv, float t, float disturbance) {',
-      '  float sparks = 0.0;',
-      '  for (int i = 0; i < 10; i++) {',
-      '    float fi = float(i);',
-      '    vec2 pos = vec2(hash1(fi * 17.3 + 100.0), hash1(fi * 11.9 + 200.0));',
-      '    pos.x = fract(pos.x + t * (0.01 + hash1(fi * 5.1 + 300.0) * 0.02));',
-      '    pos.y = fract(pos.y + sin(t * 0.3 + fi) * 0.02);',
-      '    float d = length(uv - pos);',
-      '    float size = 0.001 + hash1(fi * 3.7 + 400.0) * 0.003;',
-      '    float spark = smoothstep(size, 0.0, d);',
-      '    float trigger = smoothstep(0.2, 0.6, disturbance);',
-      '    float twinkle = sin(t * (1.0 + hash1(fi * 2.3) * 3.0) + fi * 7.0);',
-      '    twinkle = twinkle * 0.5 + 0.5;',
-      '    sparks += spark * trigger * twinkle * 0.8;',
-      '  }',
-      '  return sparks;',
-      '}',
-      '',
       'void main() {',
       '  vec2 uv = gl_FragCoord.xy / u_res;',
-      '  float aspect = u_res.x / u_res.y;',
-      '  vec2 uvAspect = vec2(uv.x * aspect, uv.y);',
-      '  float t = u_time * u_waveSpeed;',
+      '  vec2 p = (gl_FragCoord.xy - u_res * 0.5) / min(u_res.x, u_res.y);',
+      '  float t = u_time * 0.15;',
       '',
-      '  vec3 deepColor = vec3(0.017, 0.011, 0.0);',
-      '  vec3 midColor = vec3(0.028, 0.018, 0.001);',
-      '  vec3 surfaceColor = vec3(0.034, 0.024, 0.0);',
-      '  vec3 col = mix(deepColor, surfaceColor, uv.y);',
+      '  vec2 q = vec2(fbm(p + vec2(0.0, 0.0), t), fbm(p + vec2(5.2, 1.3), t));',
+      '  vec2 r = vec2(fbm(p + 4.0 * q + vec2(1.7, 9.2), t * 1.2), fbm(p + 4.0 * q + vec2(8.3, 2.8), t * 1.2));',
+      '  float f = fbm(p + 3.5 * r, t * 0.8);',
       '',
-      '  float caustic1 = noise(uvAspect * 8.0 + vec2(t * 0.12, t * 0.08));',
-      '  float caustic2 = noise(uvAspect * 12.0 + vec2(-t * 0.1, t * 0.15));',
-      '  float causticPattern = caustic1 * caustic2;',
-      '  causticPattern = pow(causticPattern, 2.0) * 3.0;',
-      '  float surfaceFade = smoothstep(0.3, 0.95, uv.y);',
-      '  col += vec3(0.034, 0.021, 0.005) * causticPattern * surfaceFade;',
-      '',
-      '  vec2 waves = oceanWaves(uvAspect * 2.5, t);',
-      '  float waveHeight = waves.x;',
-      '  float waveDisturbance = waves.y;',
-      '  col += vec3(0.02, 0.012, 0.005) * waveHeight * 0.3;',
-      '',
-      '  float bio = bioGlow(uvAspect, t) * u_glowIntensity;',
-      '',
-      '  if (u_mouse.x > 0.0) {',
-      '    vec2 mUV = u_mouse / u_res;',
-      '    vec2 mAspect = vec2(mUV.x * aspect, mUV.y);',
-      '    float mDist = length(uvAspect - mAspect);',
-      '    float attract = exp(-mDist * mDist * 10.0) * 1.2;',
-      '    bio += attract * u_glowIntensity;',
-      '  }',
-      '',
-      '  float breaks = waveBreak(uvAspect, t);',
-      '  bio += breaks * 1.2 * u_glowIntensity;',
-      '  bio = pow(max(bio, 0.0), 1.3);',
-      '',
-      '  vec3 bioColor1 = vec3(0.55, 0.26, 0.0);',
-      '  vec3 bioColor2 = vec3(0.90, 0.36, 0.41);',
-      '  vec3 bioColor3 = vec3(1.0, 0.53, 0.37);',
-      '  float colorVar = noise(uvAspect * 2.0 + t * 0.02);',
-      '  vec3 bioCol = mix(bioColor1, bioColor2, colorVar);',
-      '  bioCol = mix(bioCol, bioColor3, smoothstep(0.5, 1.0, bio));',
-      '  col += bioCol * bio * 0.7;',
-      '',
-      '  float sparks = planktonSparks(uv, t, waveDisturbance);',
-      '  vec3 sparkColor = vec3(1.0, 0.67, 0.52);',
-      '  col += sparkColor * sparks * u_glowIntensity;',
-      '',
-      '  float foam = waveBreak(uvAspect, t);',
-      '  float foamDetail = noise(uvAspect * 25.0 + t * 0.3);',
-      '  foam *= foamDetail;',
-      '  col += vec3(0.70, 0.36, 0.28) * foam * 0.4 * u_glowIntensity;',
-      '',
-      '  float streak_uv_y = uv.y * 15.0;',
-      '  float streakNoise = noise(vec2(uvAspect.x * 3.0 + t * 0.15, streak_uv_y));',
-      '  float streak = pow(streakNoise, 5.0) * 2.0;',
-      '  streak *= waveDisturbance;',
-      '  col += vec3(0.38, 0.18, 0.06) * streak * u_glowIntensity;',
-      '',
-      '  float surfaceGlow = smoothstep(0.7, 1.0, uv.y);',
-      '  float surfaceWave = noise(vec2(uvAspect.x * 4.0 + t * 0.1, t * 0.2));',
-      '  col += vec3(0.028, 0.018, 0.001) * surfaceGlow * surfaceWave;',
-      '',
-      '  float depthFog = smoothstep(0.6, 0.0, uv.y);',
-      '  col = mix(col, deepColor * 0.5, depthFog * 0.4);',
-      '',
-      '  vec2 moonUV = uv - vec2(0.5, 1.0);',
-      '  float moonDist = length(moonUV * vec2(1.0, 1.5));',
-      '  float moonLight = exp(-moonDist * moonDist * 3.0);',
-      '  col += vec3(0.034, 0.021, 0.005) * moonLight;',
-      '',
-      '  vec2 vigUV = uv - 0.5;',
-      '  float vig = 1.0 - dot(vigUV, vigUV) * 1.8;',
-      '  vig = clamp(vig, 0.0, 1.0);',
-      '  col *= 0.5 + vig * 0.5;',
-      '',
-      '  col = max(col, vec3(0.0));',
-      '  col = pow(max(col, 0.0), vec3(0.95, 1.0, 1.02));',
-      '',
+      '  vec3 col = mix(vec3(0.075, 0.065, 0.055), vec3(0.20, 0.14, 0.07), clamp(f * f * 2.0, 0.0, 1.0));',
+      '  col = mix(col, vec3(0.78, 0.58, 0.24), clamp(length(q) * 0.5, 0.0, 1.0));',
+      '  col = mix(col, vec3(0.95, 0.75, 0.35), clamp(length(r.x) * 0.6, 0.0, 1.0));',
+      '  float highlight = smoothstep(0.5, 1.2, f * f * 3.0 + length(r) * 0.5);',
+      '  col += vec3(0.18, 0.12, 0.04) * highlight;',
+      '  col = pow(col, vec3(1.1));',
       '  gl_FragColor = vec4(col, 1.0);',
       '}'
-    ]).join('\n');
+    ].join('\n');
 
     function compile(type: number, src: string) {
       const s = gl!.createShader(type);
@@ -287,23 +92,23 @@ export function BioluminescenceBackground() {
       gl!.shaderSource(s, src);
       gl!.compileShader(s);
       if (!gl!.getShaderParameter(s, gl!.COMPILE_STATUS)) {
-        console.error('Shader compile error:', gl!.getShaderInfoLog(s));
+        console.error('FluidAmber shader compile error:', gl!.getShaderInfoLog(s));
+        return null;
       }
       return s;
     }
 
     const prog = gl.createProgram();
     if (!prog) return;
-    
     const vShader = compile(gl.VERTEX_SHADER, vertSrc);
     const fShader = compile(gl.FRAGMENT_SHADER, fragSrc);
     if (!vShader || !fShader) return;
-
     gl.attachShader(prog, vShader);
     gl.attachShader(prog, fShader);
     gl.linkProgram(prog);
     if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-      console.error('Program link error:', gl.getProgramInfoLog(prog));
+      console.error('FluidAmber program link error:', gl.getProgramInfoLog(prog));
+      return;
     }
     gl.useProgram(prog);
 
@@ -316,67 +121,48 @@ export function BioluminescenceBackground() {
 
     const uTime = gl.getUniformLocation(prog, 'u_time');
     const uRes = gl.getUniformLocation(prog, 'u_res');
-    const uGlowIntensity = gl.getUniformLocation(prog, 'u_glowIntensity');
-    const uWaveSpeed = gl.getUniformLocation(prog, 'u_waveSpeed');
-    const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    let mouseXVal = -1.0, mouseYVal = -1.0;
-    
-    const glowIntensityVal = 0.35;
-    const waveSpeedVal = 1.4;
-
-    let dpr = pixelScale;
     let animationFrameId: number;
 
     function render(now: number) {
       const w = Math.round(canvas!.clientWidth * dpr);
       const h = Math.round(canvas!.clientHeight * dpr);
-
       if (canvas!.width !== w || canvas!.height !== h) {
         canvas!.width = w;
         canvas!.height = h;
         gl!.viewport(0, 0, w, h);
         gl!.uniform2f(uRes, canvas!.width, canvas!.height);
       }
-
       gl!.uniform1f(uTime, prefersReduced ? 0.0 : now * 0.001);
-      gl!.uniform1f(uGlowIntensity, glowIntensityVal);
-      gl!.uniform1f(uWaveSpeed, waveSpeedVal);
-      gl!.uniform2f(uMouse, mouseXVal, mouseYVal);
       gl!.clear(gl!.COLOR_BUFFER_BIT);
       gl!.drawArrays(gl!.TRIANGLES, 0, 3);
       animationFrameId = requestAnimationFrame(render);
     }
 
+    animationFrameId = requestAnimationFrame(render);
+
     const handleResize = () => {
-      dpr = pixelScale;
+      const w = Math.round(canvas.clientWidth * dpr);
+      const h = Math.round(canvas.clientHeight * dpr);
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+        gl.viewport(0, 0, w, h);
+        gl.uniform2f(uRes, canvas.width, canvas.height);
+      }
     };
     window.addEventListener('resize', handleResize);
 
-    animationFrameId = requestAnimationFrame(render);
-
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseXVal = e.clientX * dpr;
-      mouseYVal = (canvas!.clientHeight - e.clientY) * dpr;
-    };
-    const handleMouseLeave = () => {
-      mouseXVal = -1.0; mouseYVal = -1.0;
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseleave', handleMouseLeave);
-
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseleave', handleMouseLeave);
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
   return (
-    <canvas 
-      ref={canvasRef} 
+    <canvas
+      ref={canvasRef}
       className="fixed inset-0 block w-screen h-screen z-0 pointer-events-none"
     />
   );
