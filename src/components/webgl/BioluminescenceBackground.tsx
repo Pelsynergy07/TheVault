@@ -21,7 +21,7 @@ export function BioluminescenceBackground() {
     ].join('\n');
 
     const fragSrc = [
-      'precision highp float;',
+      'precision mediump float;',
       'uniform float u_time;',
       'uniform vec2 u_res;',
       'uniform float u_glowIntensity;',
