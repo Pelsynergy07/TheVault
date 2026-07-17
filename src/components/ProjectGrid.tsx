@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback } from "react"
 import {
   DndContext,
   closestCenter,
@@ -17,37 +17,8 @@ import { motion } from "framer-motion"
 import type { Project } from "@/types"
 import { ProjectCard } from "./ProjectCard"
 
-function GridSkeleton() {
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 auto-rows-[360px]">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <div
-          key={i}
-          className={`animate-pulse rounded-none bg-zinc-800/40 ${i % 5 === 0 || i % 5 === 3 ? "md:col-span-2" : "col-span-1"}`}
-        />
-      ))}
-    </div>
-  )
-}
-
-export function ProjectGrid({ projects: initialProjects }: { projects?: Project[] }) {
-  const [projects, setProjects] = useState<Project[] | null>(initialProjects ?? null)
-  const [items, setItems] = useState<string[]>([])
-
-  useEffect(() => {
-    if (projects) return
-    fetch("/api/projects")
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data: Project[]) => {
-        setProjects(data)
-        setItems(data.map((p) => p.slug))
-      })
-  }, [projects])
-
-  useEffect(() => {
-    if (!projects) return
-    setItems(projects.map((p) => p.slug))
-  }, [projects])
+export function ProjectGrid({ projects }: { projects: Project[] }) {
+  const [items, setItems] = useState(projects.map((p) => p.slug))
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -71,14 +42,6 @@ export function ProjectGrid({ projects: initialProjects }: { projects?: Project[
       return next
     })
   }, [])
-
-  if (!projects) {
-    return (
-      <section className="px-6 w-full max-w-7xl mx-auto z-10 relative pointer-events-none">
-        <GridSkeleton />
-      </section>
-    )
-  }
 
   const sorted = items
     .map((slug) => projects.find((p) => p.slug === slug))

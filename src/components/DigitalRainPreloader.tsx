@@ -5,12 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const KEY = "vault_preloader_played"
 
-export function DigitalRainPreloader() {
+export function DigitalRainPreloader({ loaded }: { loaded: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isVisible, setIsVisible] = useState(() => {
     if (typeof window === "undefined") return false
     return !sessionStorage.getItem(KEY)
   })
+  const [minTimePassed, setMinTimePassed] = useState(false)
 
   useEffect(() => {
     if (!isVisible) {
@@ -20,11 +21,16 @@ export function DigitalRainPreloader() {
     }
     sessionStorage.setItem(KEY, "1")
     const timer = setTimeout(() => {
-      setIsVisible(false);
+      setMinTimePassed(true)
     }, 1500);
 
     return () => clearTimeout(timer);
   }, [isVisible]);
+
+  useEffect(() => {
+    if (!isVisible || !minTimePassed || !loaded) return
+    setIsVisible(false)
+  }, [isVisible, minTimePassed, loaded])
 
   useEffect(() => {
     if (!isVisible) return;
