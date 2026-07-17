@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Code2, Save, X, Globe, Pencil, Check, Trash2 } from "lucide-react"
+import { useState, useMemo } from "react"
+import { Code2, Save, X, Globe, Pencil, Check, Trash2, FileJson } from "lucide-react"
 import type { Project, ProjectTag, ProjectStatus } from "@/types"
 
 const ALL_TAGS: ProjectTag[] = [
@@ -35,6 +35,35 @@ export function DetailsView({
   const [saved, setSaved] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showJson, setShowJson] = useState(false)
+  const [jsonText, setJsonText] = useState("")
+  const [jsonError, setJsonError] = useState("")
+  const [jsonSaving, setJsonSaving] = useState(false)
+
+  const currentProjectJson = useMemo(
+    () =>
+      JSON.stringify(
+        {
+          ...project,
+          title: formData.title,
+          tagline: formData.tagline,
+          description: formData.description,
+          status: formData.status,
+          tags: formData.tags,
+          slides: project.slides.map((s, i) => ({
+            ...s,
+            content: formData.slides[i]?.content ?? s.content,
+          })),
+          links: {
+            demo: links.demo || undefined,
+            github: links.github || undefined,
+          },
+        },
+        null,
+        2,
+      ),
+    [project, formData, links],
+  )
 
   const hasChanges =
     formData.title !== project.title ||
@@ -69,6 +98,43 @@ export function DetailsView({
       if (res.ok) onClose()
     } finally {
       setDeleting(false)
+    }
+  }
+
+  const handleJsonSave = async () => {
+    setJsonError("")
+    setJsonSaving(true)
+    try {
+      const parsed = JSON.parse(jsonText) as Project
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: jsonText,
+      })
+      if (res.ok) {
+        setFormData({
+          title: parsed.title,
+          tagline: parsed.tagline,
+          description: parsed.description,
+          status: parsed.status,
+          tags: [...parsed.tags],
+          slides: parsed.slides.map((s) => ({ id: s.id, content: s.content })),
+        })
+        setLinks({
+          demo: parsed.links?.demo ?? "",
+          github: parsed.links?.github ?? "",
+        })
+        setShowJson(false)
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+      } else {
+        const body = await res.json()
+        setJsonError(body.error ?? "Failed to save")
+      }
+    } catch {
+      setJsonError("Invalid JSON")
+    } finally {
+      setJsonSaving(false)
     }
   }
 
@@ -315,6 +381,53 @@ export function DetailsView({
               )
             })}
           </div>
+        </section>
+
+        {/* Raw JSON */}
+        <section className="space-y-4 pt-4 border-t border-white/10">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-mono tracking-widest text-white/50 uppercase">Raw JSON</h3>
+            <button
+              onClick={() => {
+                setShowJson(!showJson)
+                if (!showJson) setJsonText(currentProjectJson)
+              }}
+              className="flex items-center gap-2 px-3 py-1.5 text-[10px] font-mono tracking-wider text-white/40 border border-white/10 hover:text-white hover:border-white/30 transition-all"
+            >
+              <FileJson size={11} />
+              {showJson ? "Close" : "Edit JSON"}
+            </button>
+          </div>
+
+          {showJson && (
+            <div className="space-y-3">
+              <textarea
+                value={jsonText}
+                onChange={(e) => setJsonText(e.target.value)}
+                rows={20}
+                className="w-full bg-[#0d0d0d] border border-white/10 px-4 py-3 text-[11px] font-mono text-green-400/90 leading-relaxed focus:outline-none focus:border-white/30 transition-colors resize-y"
+              />
+              {jsonError && (
+                <p className="text-xs text-red-400">{jsonError}</p>
+              )}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleJsonSave}
+                  disabled={jsonSaving}
+                  className="flex items-center gap-2 px-4 py-2 text-xs font-mono bg-white text-black hover:bg-white/90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Save size={12} />
+                  {jsonSaving ? "Saving..." : "Save from JSON"}
+                </button>
+                <button
+                  onClick={() => setJsonText(currentProjectJson)}
+                  className="px-4 py-2 text-xs font-mono text-white/40 border border-white/10 hover:text-white transition-colors"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          )}
         </section>
 
       </div>
