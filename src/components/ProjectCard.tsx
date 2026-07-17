@@ -1,6 +1,6 @@
 "use client"
 
-import { forwardRef, useState, type HTMLAttributes } from "react"
+import { forwardRef, type HTMLAttributes } from "react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { motion } from "framer-motion"
@@ -30,11 +30,6 @@ const DragHandle = forwardRef<HTMLButtonElement, HTMLAttributes<HTMLButtonElemen
 DragHandle.displayName = "DragHandle"
 
 export function ProjectCard({ project, index }: { project: Project; index: number }) {
-  const [animateIn] = useState(() => {
-    if (typeof window === "undefined") return false
-    return !sessionStorage.getItem("vault_preloader_played")
-  })
-
   const {
     attributes,
     listeners,
@@ -54,9 +49,9 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
   return (
     <div ref={setNodeRef} style={style} className="group relative h-full">
       <motion.div
-        initial={animateIn ? { opacity: 0, scale: 1, y: 8 } : false}
-        animate={animateIn ? { opacity: 1, scale: 1, y: 0 } : { opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.06 * index, ease: [0.32, 0.72, 0, 1] }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2, delay: 0.15 * index, ease: [0.32, 0.72, 0, 1] }}
         className="h-full"
       >
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0" />
