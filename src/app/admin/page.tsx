@@ -7,7 +7,6 @@ import Link from "next/link"
 
 const questions = [
   { key: "title", label: "Project Title", placeholder: "e.g. Neural Canvas" },
-  { key: "tagline", label: "Tagline (quick summary)", placeholder: "e.g. AI-powered generative art in real-time", big: true, rows: 2 },
   { key: "problem", label: "The problem I was trying to solve for", placeholder: "Describe the problem or gap..." },
   { key: "approach", label: "My approach to solving this", placeholder: "Tech stack, approach, timeline..." },
   { key: "biggestChallenge", label: "Biggest challenge", placeholder: "The hardest engineering problem you faced..." },
@@ -45,7 +44,6 @@ export default function AdminPage() {
             .replace(/(^-|-$)/g, ""),
         )
       }
-      if (data.tagline) newForm.tagline = data.tagline
       if (data.questionnaire?.problem) newForm.problem = data.questionnaire.problem
       if (data.questionnaire?.whyMattered) newForm.whyMattered = data.questionnaire.whyMattered
       if (data.questionnaire?.howBuilt) newForm.approach = data.questionnaire.howBuilt
@@ -89,7 +87,6 @@ export default function AdminPage() {
       const payload = {
         slug,
         title: form.title ?? "Untitled",
-        tagline: form.tagline ?? "",
         description: form.problem ?? "",
         status: form.status ?? "Prototype",
         tags,
@@ -178,7 +175,7 @@ export default function AdminPage() {
                 ref={jsonRef}
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
-                placeholder='{"title": "...", "tagline": "...", ...}'
+                placeholder='{"title": "...", ...}'
                 rows={8}
                 className="w-full px-4 py-3 text-xs font-mono bg-surface backdrop-blur-sm border border-border/50 text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-accent/30 transition-colors duration-300 resize-vertical"
               />
@@ -208,13 +205,13 @@ export default function AdminPage() {
           {questions.map((q) => (
             <div key={q.key}>
               <label className="block text-sm font-mono text-foreground/80 mb-2">{q.label}</label>
-              {q.big || q.key === "problem" || q.key === "approach" ||
+              {q.key === "problem" || q.key === "approach" ||
                q.key === "biggestChallenge" || q.key === "outcome" || q.key === "skills" ? (
                 <textarea
                   value={form[q.key] ?? ""}
                   onChange={(e) => updateField(q.key, e.target.value)}
                   placeholder={q.placeholder}
-                  rows={q.rows ?? 4}
+                  rows={4}
                   className="w-full px-4 py-3 text-sm bg-surface backdrop-blur-sm border border-border/50 text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-accent/30 transition-colors duration-300 resize-vertical"
                 />
               ) : (

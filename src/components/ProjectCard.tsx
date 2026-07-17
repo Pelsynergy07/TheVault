@@ -119,11 +119,8 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
             <h3 className="text-xl sm:text-2xl font-sans tracking-tight text-white/90 group-hover:text-white transition-all duration-500 mb-2">
               {project.title}
             </h3>
-            <p className="text-sm text-white/50 leading-relaxed font-sans line-clamp-2 mb-2">
-              {project.tagline}
-            </p>
             {plainDescription && (
-              <p className="text-xs text-white/30 leading-relaxed line-clamp-3">
+              <p className="text-sm text-white/50 leading-relaxed font-sans line-clamp-3">
                 {plainDescription}
               </p>
             )}

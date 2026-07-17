@@ -22,7 +22,6 @@ export function DetailsView({
 }) {
   const [formData, setFormData] = useState({
     title: project.title,
-    tagline: project.tagline,
     description: project.description,
     status: project.status,
     tags: [...project.tags],
@@ -48,7 +47,6 @@ export function DetailsView({
         {
           ...project,
           title: formData.title,
-          tagline: formData.tagline,
           description: formData.description,
           status: formData.status,
           tags: formData.tags,
@@ -69,7 +67,6 @@ export function DetailsView({
 
   const hasChanges =
     formData.title !== project.title ||
-    formData.tagline !== project.tagline ||
     formData.description !== project.description ||
     formData.status !== project.status ||
     JSON.stringify(formData.tags) !== JSON.stringify(project.tags) ||
@@ -137,7 +134,6 @@ export function DetailsView({
         const updated = parsed as Project
         setFormData({
           title: updated.title,
-          tagline: updated.tagline ?? "",
           description: updated.description ?? "",
           status: updated.status ?? "Prototype",
           tags: [...(updated.tags ?? [])],
@@ -168,7 +164,6 @@ export function DetailsView({
       const updated: Project = {
         ...project,
         title: formData.title,
-        tagline: formData.tagline,
         description: formData.description,
         status: formData.status,
         tags: formData.tags,
@@ -361,15 +356,6 @@ export function DetailsView({
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full bg-white/5 border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-mono text-white/40 uppercase">Tagline</label>
-              <input
-                type="text"
-                value={formData.tagline}
-                onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
                 className="w-full bg-white/5 border border-white/10 px-4 py-3 text-white focus:outline-none focus:border-white/30 transition-colors"
               />
             </div>
