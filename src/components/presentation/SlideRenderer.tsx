@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion"
 import { ExternalLink, Code2 } from "lucide-react"
+import { FormattedContent } from "@/components/FormattedContent"
 import type { SlideContent } from "@/types"
 
 const slideVariants = {
@@ -39,10 +40,8 @@ export function SlideRenderer({ slide, direction }: { slide: SlideContent; direc
         {slide.title}
       </h2>
 
-      <div className="prose prose-invert max-w-3xl">
-        <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-          {slide.content}
-        </p>
+      <div className="max-w-3xl text-base sm:text-lg text-muted-foreground leading-relaxed">
+        <FormattedContent text={slide.content} />
       </div>
 
       {slide.media && (
