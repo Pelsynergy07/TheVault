@@ -13,7 +13,7 @@ export function BioluminescenceBackground() {
     if (!gl) return;
 
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const pixelScale = 0.6;
+    const pixelScale = 0.5;
 
     const vertSrc = [
       'attribute vec2 a_pos;',
@@ -21,7 +21,7 @@ export function BioluminescenceBackground() {
     ].join('\n');
 
     const fragSrc = [
-      'precision mediump float;',
+      'precision highp float;',
       'uniform float u_time;',
       'uniform vec2 u_res;',
       'uniform float u_glowIntensity;',
@@ -281,11 +281,31 @@ export function BioluminescenceBackground() {
     let dpr = Math.min(window.devicePixelRatio || 1, 1) * pixelScale;
     let animationFrameId: number;
     let hasLoggedSize = false;
+    let frameCount = 0;
+    let frameTimings: number[] = [];
+    let qualityReduced = false;
+    let lastFrameTime = performance.now();
 
     console.log("Bioluminescence: WebGL program initialized successfully.");
 
+    function checkPerformance(now: number) {
+      const dt = now - lastFrameTime;
+      lastFrameTime = now;
+      frameTimings.push(dt);
+      frameCount++;
+      if (frameCount === 30) {
+        const avg = frameTimings.reduce((a, b) => a + b, 0) / frameTimings.length;
+        if (avg > 33 && !qualityReduced) {
+          dpr *= 0.7;
+          qualityReduced = true;
+          console.log(`Bioluminescence: Reduced dpr to ${dpr.toFixed(3)} (avg ${avg.toFixed(1)}ms)`);
+        }
+        frameTimings = [];
+      }
+    }
+
     function render(now: number) {
-      // Dynamic resize check on every frame to handle initial mount 0px width/height bug
+      checkPerformance(now);
       const w = Math.round(canvas!.clientWidth * dpr);
       const h = Math.round(canvas!.clientHeight * dpr);
       
