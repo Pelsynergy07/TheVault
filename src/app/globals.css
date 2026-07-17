@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-surface: var(--surface);
+  --color-glow: var(--glow);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-aurora-1: #6a0dad;
+  --color-aurora-2: #0d7377;
+  --color-aurora-3: #1a0533;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #fafaf9;
+  --foreground: #1c1917;
+  --muted: #f5f5f4;
+  --muted-foreground: #78716c;
+  --border: #e7e5e4;
+  --accent: #6d28d9;
+  --accent-foreground: #fafaf9;
+  --card: #ffffff;
+  --card-foreground: #1c1917;
+  --surface: rgba(255, 255, 255, 0.7);
+  --glow: rgba(109, 40, 217, 0.15);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #f5f5f4;
+  --muted: #1c1917;
+  --muted-foreground: #a8a29e;
+  --border: #292524;
+  --accent: #8b5cf6;
+  --accent-foreground: #fafaf9;
+  --card: #141312;
+  --card-foreground: #f5f5f4;
+  --surface: rgba(20, 19, 18, 0.7);
+  --glow: rgba(139, 92, 246, 0.12);
+}
+
+* {
+  border-color: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+@keyframes aurora {
+  0%, 100% { opacity: 0.3; transform: translate(0, 0) scale(1); }
+  25% { opacity: 0.5; transform: translate(-5%, -3%) scale(1.05); }
+  50% { opacity: 0.35; transform: translate(5%, 2%) scale(0.95); }
+  75% { opacity: 0.45; transform: translate(-3%, 5%) scale(1.02); }
+}
+
+.animate-aurora {
+  animation: aurora 8s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
