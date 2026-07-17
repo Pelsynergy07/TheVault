@@ -1,18 +1,50 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import type { Project } from "@/types"
 import { DigitalRainPreloader } from "./DigitalRainPreloader"
 import { BioluminescenceBackground } from "./webgl/BioluminescenceBackground"
 import { ProjectGrid } from "./ProjectGrid"
 
+let cached: Project[] | null = null
+let lastFetch = 0
+const REFRESH_MS = 3_000
+let fetchPromise: Promise<Project[]> | null = null
+
+async function getCachedProjects(): Promise<Project[]> {
+  const now = Date.now()
+  if (cached && now - lastFetch < REFRESH_MS) {
+    return cached
+  }
+  if (fetchPromise) {
+    return fetchPromise
+  }
+  fetchPromise = fetch("/api/projects")
+    .then((res) => (res.ok ? res.json() : []))
+    .then((data: Project[]) => {
+      cached = data
+      lastFetch = Date.now()
+      fetchPromise = null
+      return data
+    })
+  return fetchPromise
+}
+
 export function HomeContent() {
   const [projects, setProjects] = useState<Project[] | null>(null)
+  const refreshTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
-    fetch("/api/projects")
-      .then((res) => (res.ok ? res.json() : []))
-      .then(setProjects)
+    getCachedProjects().then(setProjects)
+
+    refreshTimer.current = setInterval(async () => {
+      const data = await getCachedProjects()
+      setProjects(data)
+    }, REFRESH_MS)
+
+    return () => {
+      if (refreshTimer.current) clearInterval(refreshTimer.current)
+    }
   }, [])
 
   return (
