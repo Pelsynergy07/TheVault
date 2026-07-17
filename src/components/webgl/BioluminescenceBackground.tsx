@@ -13,7 +13,7 @@ export function BioluminescenceBackground() {
     if (!gl) return;
 
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const pixelScale = 1;
+    const pixelScale = 0.6;
 
     const vertSrc = [
       'attribute vec2 a_pos;',
@@ -49,8 +49,7 @@ export function BioluminescenceBackground() {
       '  float val = 0.0;',
       '  float amp = 0.5;',
       '  float freq = 1.0;',
-      '  for (int i = 0; i < 8; i++) {',
-      '    if (i >= octaves) break;',
+      '  for (int i = 0; i < 5; i++) {',
       '    val += amp * noise(p * freq);',
       '    freq *= 2.03;',
       '    amp *= 0.49;',
@@ -61,14 +60,14 @@ export function BioluminescenceBackground() {
       '',
       'float warpedNoise(vec2 p, float t) {',
       '  vec2 q = vec2(',
-      '    fbm(p + vec2(0.0, 0.0) + t * 0.04, 4),',
-      '    fbm(p + vec2(5.2, 1.3) + t * 0.03, 4)',
+      '    fbm(p + vec2(0.0, 0.0) + t * 0.04, 2),',
+      '    fbm(p + vec2(5.2, 1.3) + t * 0.03, 2)',
       '  );',
       '  vec2 r = vec2(',
-      '    fbm(p + 3.0 * q + vec2(1.7, 9.2) + t * 0.05, 4),',
-      '    fbm(p + 3.0 * q + vec2(8.3, 2.8) + t * 0.04, 4)',
+      '    fbm(p + 3.0 * q + vec2(1.7, 9.2) + t * 0.05, 2),',
+      '    fbm(p + 3.0 * q + vec2(8.3, 2.8) + t * 0.04, 2)',
       '  );',
-      '  return fbm(p + 2.5 * r, 5);',
+      '  return fbm(p + 2.5 * r, 3);',
       '}',
       '',
       'vec2 oceanWaves(vec2 p, float t) {',
@@ -77,7 +76,7 @@ export function BioluminescenceBackground() {
       '  float amp = 1.0;',
       '  float freq = 1.0;',
       '',
-      '  for (int i = 0; i < 6; i++) {',
+      '  for (int i = 0; i < 4; i++) {',
       '    float fi = float(i);',
       '    float angle = fi * 0.7 + 0.3;',
       '    vec2 dir = vec2(cos(angle), sin(angle));',
@@ -94,7 +93,7 @@ export function BioluminescenceBackground() {
       '',
       'float waveBreak(vec2 uv, float t) {',
       '  float breaks = 0.0;',
-      '  for (int i = 0; i < 4; i++) {',
+      '  for (int i = 0; i < 2; i++) {',
       '    float fi = float(i);',
       '    float y_center = 0.1 + fi * 0.22;',
       '    float wave_x = uv.x * (2.0 + fi * 0.8) + t * (0.15 + fi * 0.05);',
@@ -120,7 +119,7 @@ export function BioluminescenceBackground() {
       '  float eddy = fbm(eddy_uv, 6);',
       '  float eddy_curl = abs(eddy - fbm(eddy_uv + vec2(0.01, 0.0), 6)) * 80.0;',
       '  glow += eddy_curl * disturbance * 0.3;',
-      '  for (int i = 0; i < 5; i++) {',
+      '  for (int i = 0; i < 3; i++) {',
       '    float fi = float(i);',
       '    vec2 center = vec2(hash1(fi * 13.7 + 1.0) * 1.6 - 0.3, hash1(fi * 7.3 + 2.0) * 1.2 - 0.1);',
       '    center.x += sin(t * 0.05 + fi * 2.0) * 0.15;',
@@ -135,7 +134,7 @@ export function BioluminescenceBackground() {
       '',
       'float planktonSparks(vec2 uv, float t, float disturbance) {',
       '  float sparks = 0.0;',
-      '  for (int i = 0; i < 25; i++) {',
+      '  for (int i = 0; i < 10; i++) {',
       '    float fi = float(i);',
       '    vec2 pos = vec2(hash1(fi * 17.3 + 100.0), hash1(fi * 11.9 + 200.0));',
       '    pos.x = fract(pos.x + t * (0.01 + hash1(fi * 5.1 + 300.0) * 0.02));',
@@ -279,7 +278,7 @@ export function BioluminescenceBackground() {
     const glowIntensityVal = 0.35;
     const waveSpeedVal = 1.4;
 
-    let dpr = Math.min(window.devicePixelRatio || 1, 2) * pixelScale;
+    let dpr = Math.min(window.devicePixelRatio || 1, 1) * pixelScale;
     let animationFrameId: number;
     let hasLoggedSize = false;
 
@@ -311,7 +310,7 @@ export function BioluminescenceBackground() {
     }
 
     const handleResize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2) * pixelScale;
+      dpr = Math.min(window.devicePixelRatio || 1, 1) * pixelScale;
     };
     window.addEventListener('resize', handleResize);
 
