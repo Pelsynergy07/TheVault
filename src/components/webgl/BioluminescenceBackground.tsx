@@ -9,11 +9,12 @@ export function BioluminescenceBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const gl = canvas.getContext('webgl', { alpha: true, antialias: false, preserveDrawingBuffer: false });
+    const gl = canvas.getContext('webgl2', { alpha: true, antialias: false, preserveDrawingBuffer: false, powerPreference: 'high-performance' }) 
+      || canvas.getContext('webgl', { alpha: true, antialias: false, preserveDrawingBuffer: false, powerPreference: 'high-performance' });
     if (!gl) return;
 
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const pixelScale = 0.5;
+    const pixelScale = Math.min(window.devicePixelRatio || 1, 1.5);
 
     const vertSrc = [
       'attribute vec2 a_pos;',
@@ -278,41 +279,12 @@ export function BioluminescenceBackground() {
     const glowIntensityVal = 0.35;
     const waveSpeedVal = 1.4;
 
-    let dpr = Math.min(window.devicePixelRatio || 1, 1) * pixelScale;
+    let dpr = pixelScale;
     let animationFrameId: number;
-    let hasLoggedSize = false;
-    let frameCount = 0;
-    let frameTimings: number[] = [];
-    let qualityReduced = false;
-    let lastFrameTime = performance.now();
-
-    console.log("Bioluminescence: WebGL program initialized successfully.");
-
-    function checkPerformance(now: number) {
-      const dt = now - lastFrameTime;
-      lastFrameTime = now;
-      frameTimings.push(dt);
-      frameCount++;
-      if (frameCount === 30) {
-        const avg = frameTimings.reduce((a, b) => a + b, 0) / frameTimings.length;
-        if (avg > 33 && !qualityReduced) {
-          dpr *= 0.7;
-          qualityReduced = true;
-          console.log(`Bioluminescence: Reduced dpr to ${dpr.toFixed(3)} (avg ${avg.toFixed(1)}ms)`);
-        }
-        frameTimings = [];
-      }
-    }
 
     function render(now: number) {
-      checkPerformance(now);
       const w = Math.round(canvas!.clientWidth * dpr);
       const h = Math.round(canvas!.clientHeight * dpr);
-      
-      if (!hasLoggedSize && w > 0 && h > 0) {
-        console.log(`Bioluminescence: Canvas size updated to ${w}x${h} (dpr: ${dpr})`);
-        hasLoggedSize = true;
-      }
 
       if (canvas!.width !== w || canvas!.height !== h) {
         canvas!.width = w;
@@ -330,7 +302,7 @@ export function BioluminescenceBackground() {
     }
 
     const handleResize = () => {
-      dpr = Math.min(window.devicePixelRatio || 1, 1) * pixelScale;
+      dpr = pixelScale;
     };
     window.addEventListener('resize', handleResize);
 
