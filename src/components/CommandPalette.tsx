@@ -41,7 +41,7 @@ export function CommandMenu({
         "bg-black/60 backdrop-blur-sm",
       )}
     >
-      <div className="fixed top-[20%] left-1/2 -translate-x-1/2 w-full max-w-lg">
+      <div className="fixed top-[15%] sm:top-[20%] left-0 right-0 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 w-full sm:max-w-lg px-4 sm:px-0">
         <div className="bg-card border border-border shadow-2xl">
           <div className="flex items-center gap-3 px-4 border-b border-border">
             <Search size={14} className="text-muted-foreground/40 shrink-0" />

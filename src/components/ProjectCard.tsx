@@ -58,7 +58,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
   const plainDescription = useMemo(() => stripMarkdown(project.description ?? ""), [project.description])
 
   return (
-    <div ref={setNodeRef} style={style} className="group relative h-full">
+    <div ref={setNodeRef} style={style} className="group relative h-full min-h-[280px] sm:min-h-[320px]">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -87,7 +87,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
             >
               {project.status}
             </span>
-            <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+            <div className="flex gap-2 sm:opacity-0 sm:translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
               {project.links.demo && (
                 <a
                   href={project.links.demo}

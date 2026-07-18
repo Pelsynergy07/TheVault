@@ -209,7 +209,7 @@ export function DetailsView({
         </button>
       </header>
 
-      <div className="flex-1 max-w-4xl w-full mx-auto p-6 sm:p-12 space-y-12">
+      <div className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-8 lg:p-12 space-y-10 sm:space-y-12">
 
         {/* Links */}
         <section className="space-y-4">
@@ -311,9 +311,9 @@ export function DetailsView({
 
         {/* Information & Save */}
         <section className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-mono tracking-widest text-white/50 uppercase">Information</h3>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={handleSave}
                 disabled={!hasChanges || saving}

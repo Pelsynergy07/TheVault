@@ -1,0 +1,57 @@
+{
+  "title": "The Vault",
+  "tagline": "A premium AI lab portfolio — part showcase, part workshop, part operating system for experiments.",
+  "status": "Live",
+  "tags": ["AI", "Product", "WebGL", "Design Systems", "Automation", "Research", "3D"],
+  "links": {
+    "demo": "https://the-vault-portfolio.vercel.app",
+    "github": "https://github.com/Pelsynergy07/TheVault"
+  },
+  "description": "- Most portfolios are static galleries.\n- I wanted mine to be a living lab notebook — a place where each project has depth, context, and a story.\n- I also wanted to dogfood my own tools: build a system that makes it easy to add new projects, and use it as a sandbox to learn new technologies.\n- The goal was to create something that feels more like a product than a portfolio.",
+  "questionnaire": {
+    "problem": "- Most portfolios are static galleries.\n- I wanted mine to be a living lab notebook — a place where each project has depth, context, and a story.\n- I also wanted to dogfood my own tools: build a system that makes it easy to add new projects, and use it as a sandbox to learn new technologies.\n- The goal was to create something that feels more like a product than a portfolio.",
+    "whyMattered": "A portfolio is never really done, so I wanted to build something I'd enjoy maintaining and iterating on.\n\n- Most project galleries show only the result, not the thinking behind it.\n- I wanted each project to feel like a mini case study.\n- Building it publicly also pushed me to ship things I'd otherwise leave unfinished.\n\nIt became a reflection of how I work: fast, iterative, and focused on craft.",
+    "howBuilt": "I started by exploring WebGL shaders — the Bioluminescence and Aurora backgrounds were built first, just to see what was possible.\n\nThen I built the project system:\n- Designed a questionnaire-based workflow so adding a project feels like answering a short interview.\n- Used drag-and-drop reordering because the order of projects always changes.\n- Added a full-screen presentation mode with animated slide transitions for each project.\n- Built a command palette (⌘K) for quick navigation because I use it on every site I visit.\n\n**Tech Stack:**\n- **Next.js 16** with App Router\n- **TypeScript** + **Tailwind CSS v4**\n- **Framer Motion** for spring-powered animations\n- **Three.js / @react-three/fiber** for WebGL backgrounds\n- **@dnd-kit** for drag-and-drop sorting\n- **Supabase** for persistence\n- **Lucide** for icons\n\nThe whole thing was built iteratively — each new feature was an excuse to learn something I hadn't tried before.",
+    "biggestChallenge": "The WebGL backgrounds took the most experimentation.\n\n- Writing GLSL fragment shaders that look good across different GPUs and screen sizes.\n- Making the bioluminescence effect feel organic and responsive to mouse movement.\n- Balancing visual quality with performance so the site stays smooth.\n- Building the Digital Rain preloader with wave physics and ripple effects.\n\nOn the product side, the hardest part was designing the questionnaire flow — turning open-ended answers into a structured project page without making the process feel like a form.",
+    "outcome": "- A fully functional portfolio that doubles as a project management system.\n- Six published projects with rich presentation content.\n- A repeatable workflow for adding new projects in minutes.\n- WebGL shader skills that I can reuse in future creative projects.\n- Deep understanding of Next.js App Router, Supabase, and modern React patterns.\n- Dogfooding confirmed: I actually enjoy updating this site.",
+    "improveNext": "- **Creative Coding** — WebGL shaders, GLSL, Three.js\n- **Next.js App Router** — server components, API routes, parallel routes\n- **Drag-and-drop UIs** — dnd-kit, sortable contexts, custom handles\n- **AI-assisted Development** — using LLMs for rapid prototyping\n- **Design Systems** — building a consistent visual language from scratch\n- **Product Thinking** — designing tools that make future work easier"
+  },
+  "slides": [
+    {
+      "id": "problem",
+      "type": "problem",
+      "title": "The Problem",
+      "content": "- Most portfolios are static galleries.\n- I wanted mine to be a living lab notebook — a place where each project has depth, context, and a story.\n- I also wanted to dogfood my own tools: build a system that makes it easy to add new projects, and use it as a sandbox to learn new technologies.\n- The goal was to create something that feels more like a product than a portfolio."
+    },
+    {
+      "id": "why",
+      "type": "why",
+      "title": "Why It Mattered",
+      "content": "A portfolio is never really done, so I wanted to build something I'd enjoy maintaining and iterating on.\n\n- Most project galleries show only the result, not the thinking behind it.\n- I wanted each project to feel like a mini case study.\n- Building it publicly also pushed me to ship things I'd otherwise leave unfinished.\n\nIt became a reflection of how I work: fast, iterative, and focused on craft."
+    },
+    {
+      "id": "solution",
+      "type": "solution",
+      "title": "My Approach",
+      "content": "I started by exploring WebGL shaders — the Bioluminescence and Aurora backgrounds were built first, just to see what was possible.\n\nThen I built the project system:\n- Designed a questionnaire-based workflow so adding a project feels like answering a short interview.\n- Used drag-and-drop reordering because the order of projects always changes.\n- Added a full-screen presentation mode with animated slide transitions for each project.\n- Built a command palette (⌘K) for quick navigation.\n\n**Tech Stack:**\n- **Next.js 16** with App Router\n- **TypeScript** + **Tailwind CSS v4**\n- **Framer Motion** for spring-powered animations\n- **Three.js / @react-three/fiber** for WebGL backgrounds\n- **@dnd-kit** for drag-and-drop sorting\n- **Supabase** for persistence\n- **Lucide** for icons"
+    },
+    {
+      "id": "architecture",
+      "type": "architecture",
+      "title": "Biggest Challenge",
+      "content": "The WebGL backgrounds took the most experimentation.\n\n- Writing GLSL fragment shaders that look good across different GPUs and screen sizes.\n- Making the bioluminescence effect feel organic and responsive to mouse movement.\n- Balancing visual quality with performance.\n- Building the Digital Rain preloader with wave physics and ripple effects.\n\nOn the product side, the hardest part was designing the questionnaire flow — turning open-ended answers into a structured project page without making the process feel like a form."
+    },
+    {
+      "id": "results",
+      "type": "results",
+      "title": "Outcome",
+      "content": "- A fully functional portfolio that doubles as a project management system.\n- Six published projects with rich presentation content.\n- A repeatable workflow for adding new projects in minutes.\n- WebGL shader skills that I can reuse in future creative projects.\n- Deep understanding of Next.js App Router, Supabase, and modern React patterns."
+    },
+    {
+      "id": "learnings",
+      "type": "learnings",
+      "title": "Skills Unlocked",
+      "content": "- **Creative Coding** — WebGL shaders, GLSL, Three.js\n- **Next.js App Router** — server components, API routes, parallel routes\n- **Drag-and-drop UIs** — dnd-kit, sortable contexts, custom handles\n- **AI-assisted Development** — using LLMs for rapid prototyping\n- **Design Systems** — building a consistent visual language from scratch\n- **Product Thinking** — designing tools that make future work easier"
+    }
+  ]
+}

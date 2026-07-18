@@ -55,10 +55,10 @@ export default function ProjectPage() {
       )}
       
       {/* View Toggle Floating Button */}
-      <div className="fixed bottom-8 left-8 z-[100] flex bg-black/40 backdrop-blur-xl border border-white/10 rounded-full p-1 shadow-2xl">
+      <div className="fixed bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 sm:left-8 sm:translate-x-0 z-[100] flex bg-black/40 backdrop-blur-xl border border-white/10 rounded-full p-1 shadow-2xl">
         <button
           onClick={() => setViewMode("presentation")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all ${
+          className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full text-xs font-medium transition-all ${
             viewMode === "presentation" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80 hover:bg-white/5"
           }`}
         >
@@ -67,7 +67,7 @@ export default function ProjectPage() {
         </button>
         <button
           onClick={() => setViewMode("details")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium transition-all ${
+          className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full text-xs font-medium transition-all ${
             viewMode === "details" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80 hover:bg-white/5"
           }`}
         >

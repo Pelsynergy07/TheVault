@@ -58,20 +58,20 @@ export function PresentationView({
 
   return (
     <div className="fixed inset-0 z-[90] bg-background flex flex-col">
-      <header className="flex items-center justify-between px-6 py-4 border-b border-border/50 shrink-0">
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-medium text-foreground">{project.title}</span>
-          <span className="text-xs font-mono text-muted-foreground/50">
+      <header className="flex items-center justify-between gap-2 px-4 sm:px-6 py-3 sm:py-4 border-b border-border/50 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+          <span className="text-sm font-medium text-foreground truncate max-w-[140px] sm:max-w-none">{project.title}</span>
+          <span className="text-xs font-mono text-muted-foreground/50 shrink-0">
             {currentSlide + 1} / {totalSlides}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {project.links.demo && (
             <a
               href={project.links.demo}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-muted-foreground/50 border border-border/40 hover:text-foreground hover:border-border transition-all duration-300"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-muted-foreground/50 border border-border/40 hover:text-foreground hover:border-border transition-all duration-300"
             >
               <Globe size={11} />
               Live Demo
@@ -82,7 +82,7 @@ export function PresentationView({
               href={project.links.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-muted-foreground/50 border border-border/40 hover:text-foreground hover:border-border transition-all duration-300"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-muted-foreground/50 border border-border/40 hover:text-foreground hover:border-border transition-all duration-300"
             >
               <Code2 size={11} />
               GitHub
@@ -90,7 +90,7 @@ export function PresentationView({
           )}
           <button
             onClick={() => setInterviewMode(!interviewMode)}
-            className={`flex items-center gap-2 px-3 py-1.5 text-xs font-mono transition-all duration-300 border ${
+            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs font-mono transition-all duration-300 border ${
               interviewMode
                 ? "bg-accent text-accent-foreground border-accent"
                 : "text-muted-foreground/50 border-border/40 hover:text-foreground"
@@ -115,7 +115,7 @@ export function PresentationView({
         </AnimatePresence>
 
         {interviewMode && (
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-6 py-3 bg-card border border-border/50 backdrop-blur-md max-w-lg text-center">
+          <div className="absolute bottom-20 sm:bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] sm:w-auto px-6 py-3 bg-card border border-border/50 backdrop-blur-md max-w-lg text-center">
             <p className="text-sm text-muted-foreground leading-relaxed">
               <span className="text-accent font-mono text-xs tracking-widest uppercase mr-2">
                 Talking Point:

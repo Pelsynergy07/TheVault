@@ -134,7 +134,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-dvh pt-24 px-6 pb-16">
+    <main className="min-h-dvh pt-20 sm:pt-24 px-4 sm:px-6 pb-16">
       <div className="mx-auto w-full max-w-2xl">
         <Link
           href="/"

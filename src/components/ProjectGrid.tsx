@@ -56,12 +56,12 @@ export function ProjectGrid({ projects }: { projects: Project[] }) {
   }
 
   return (
-    <section className="px-6 w-full max-w-7xl mx-auto z-10 relative pointer-events-none">
+    <section className="w-full max-w-7xl mx-auto z-10 relative pointer-events-none">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={items} strategy={rectSortingStrategy}>
           <motion.div
             layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pointer-events-auto auto-rows-[360px]"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 pointer-events-auto"
           >
             {sorted.map((project, i) => (
               <div key={project.slug} className="col-span-1">

@@ -30,22 +30,22 @@ export function SlideRenderer({ slide, direction }: { slide: SlideContent; direc
       animate="center"
       exit="exit"
       transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
-      className="flex flex-col justify-center h-full px-8 sm:px-16 lg:px-24 max-w-5xl mx-auto"
+      className="flex flex-col justify-center h-full px-5 sm:px-12 lg:px-24 py-8 sm:py-0 max-w-5xl mx-auto overflow-y-auto"
     >
-      <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-accent/60 mb-6">
+      <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-accent/60 mb-4 sm:mb-6 shrink-0">
         {slideLabels[slide.type] ?? slide.type}
       </span>
 
-      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-foreground mb-6 leading-[1.1]">
+      <h2 className="text-2xl sm:text-4xl lg:text-5xl font-medium tracking-tight text-foreground mb-4 sm:mb-6 leading-[1.1] shrink-0">
         {slide.title}
       </h2>
 
-      <div className="max-w-3xl text-base sm:text-lg text-muted-foreground leading-relaxed">
+      <div className="max-w-3xl text-sm sm:text-base lg:text-lg text-muted-foreground leading-relaxed">
         <FormattedContent text={slide.content} />
       </div>
 
       {slide.media && (
-        <div className="mt-8 max-w-2xl">
+        <div className="mt-6 sm:mt-8 max-w-2xl">
           {slide.media.type === "image" && (
             <img
               src={slide.media.src}
@@ -71,7 +71,7 @@ export function SlideRenderer({ slide, direction }: { slide: SlideContent; direc
       )}
 
       {slide.links && slide.links.length > 0 && (
-        <div className="mt-8 flex flex-wrap gap-4">
+        <div className="mt-6 sm:mt-8 flex flex-wrap gap-4">
           {slide.links.map((link) => (
             <a
               key={link.label}
