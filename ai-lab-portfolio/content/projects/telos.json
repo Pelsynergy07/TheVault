@@ -1,0 +1,60 @@
+{
+  "date": "2026-07-17",
+  "slug": "telos",
+  "tags": ["AI", "Product"],
+  "links": {
+    "demo": "https://telos-goal-tracker.vercel.app/",
+    "github": "https://github.com/Pelsynergy07/TelOS_Goals-and-tracker-app"
+  },
+  "title": "Telos",
+  "slides": [
+    {
+      "id": "problem",
+      "type": "problem",
+      "title": "The Problem",
+      "content": "- Long-term goals often feel disconnected from daily work.\n- They almost seemed impossible to get to where I wanted to be from where I am right now.\n- When I explored productivity apps to help me with this, most of them needed me to add separate tasks.\n- I wanted a system that could bridge the gap between vision and execution."
+    },
+    {
+      "id": "why",
+      "type": "why",
+      "title": "Why It Mattered",
+      "content": "- Long-term goals often feel disconnected from daily work.\n- They almost seemed impossible to get to where I wanted to be from where I am right now.\n- When I explored productivity apps to help me with this, most of them needed me to add separate tasks.\n- I wanted a system that could bridge the gap between vision and execution."
+    },
+    {
+      "id": "solution",
+      "type": "solution",
+      "title": "My Approach",
+      "content": "Rather than starting with features, I began by thinking about how people naturally reflect on their lives.\n\n- I designed the experience around a **conversation** instead of forms.\n- I created a first version with Opencode to rapidly prototype different core flows.\n- Every iteration was driven by my own daily use.\n- My goal was to learn one new concept each time while continuously refining the experience."
+    },
+    {
+      "id": "architecture",
+      "type": "architecture",
+      "title": "Biggest Challenge",
+      "content": "Implementing the UI wasn't that difficult.\n\nThe real challenge was designing the core experience:\n- Helping users reflect on themselves.\n- Uncover their core beliefs.\n- Define meaningful long-term goals.\n\nI explored multiple approaches to make this process feel as natural and frictionless as possible.\n\nThis eventually became my longest AI-assisted project."
+    },
+    {
+      "id": "results",
+      "type": "results",
+      "title": "Outcome",
+      "content": "- Built a functional AI planning system for personal use.\n- Created an end-to-end workflow from vision to daily execution.\n- Validated conversational planning as a more engaging alternative to traditional planners.\n- Established a strong foundation for future iterations.\n- Shared it with friends and colleagues — a few of them now use it on a daily basis."
+    },
+    {
+      "id": "learnings",
+      "type": "learnings",
+      "title": "Skills Unlocked",
+      "content": "- **Human-AI Interaction** — designing natural conversational flows\n- **Prompt Engineering** — structuring prompts for meaningful reflection\n- **Supabase backend integration** — data modeling and real-time sync\n- **Rapid Prototyping** — iterating fast with Opencode\n- **AI Product Design** — bridging user needs with model capabilities"
+    }
+  ],
+  "status": "Prototype",
+  "tagline": "An AI-powered life operating system that turns long-term ambitions into daily action.",
+  "featured": false,
+  "description": "- Long-term goals often feel disconnected from daily work.\n- They almost seemed impossible to get to where I wanted to be from where I am right now.\n- When I explored productivity apps to help me with this, most of them needed me to add separate tasks.\n- I wanted a system that could bridge the gap between vision and execution.",
+  "questionnaire": {
+    "problem": "- Long-term goals often feel disconnected from daily work.\n- They almost seemed impossible to get to where I wanted to be from where I am right now.\n- When I explored productivity apps to help me with this, most of them needed me to add separate tasks.\n- I wanted a system that could bridge the gap between vision and execution.",
+    "whyMattered": "- Long-term goals often feel disconnected from daily work.\n- They almost seemed impossible to get to where I wanted to be from where I am right now.\n- When I explored productivity apps to help me with this, most of them needed me to add separate tasks.\n- I wanted a system that could bridge the gap between vision and execution.",
+    "howBuilt": "Rather than starting with features, I began by thinking about how people naturally reflect on their lives.\n\n- I designed the experience around a **conversation** instead of forms.\n- I created a first version with Opencode to rapidly prototype different core flows.\n- Every iteration was driven by my own daily use.\n- My goal was to learn one new concept each time while continuously refining the experience.",
+    "biggestChallenge": "Implementing the UI wasn't that difficult.\n\nThe real challenge was designing the core experience:\n- Helping users reflect on themselves.\n- Uncover their core beliefs.\n- Define meaningful long-term goals.\n\nI explored multiple approaches to make this process feel as natural and frictionless as possible.\n\nThis eventually became my longest AI-assisted project.",
+    "outcome": "- Built a functional AI planning system for personal use.\n- Created an end-to-end workflow from vision to daily execution.\n- Validated conversational planning as a more engaging alternative to traditional planners.\n- Established a strong foundation for future iterations.\n- Shared it with friends and colleagues — a few of them now use it on a daily basis.",
+    "improveNext": "- **Human-AI Interaction** — designing natural conversational flows\n- **Prompt Engineering** — structuring prompts for meaningful reflection\n- **Supabase backend integration** — data modeling and real-time sync\n- **Rapid Prototyping** — iterating fast with Opencode\n- **AI Product Design** — bridging user needs with model capabilities"
+  }
+}

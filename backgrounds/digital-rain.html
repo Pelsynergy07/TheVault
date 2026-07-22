@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Rain</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0a0a; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  .label {
+    position: fixed;
+    top: 20px;
+    left: 24px;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(200, 149, 108, 0.5);
+    z-index: 10;
+    pointer-events: none;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+<div class="label">Digital Rain</div>
+<canvas id="canvas"></canvas>
+<script>
+(function () {
+  var canvas = document.getElementById('canvas');
+  var ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  var width, height, dpr;
+  var FONT_SIZE = 16;
+  var FALL_SPEED = 1.0;
+  var COLUMN_DENSITY = 0.7;
+
+  var katakana = '\u30A2\u30A4\u30A6\u30A8\u30AA\u30AB\u30AD\u30AF\u30B1\u30B3\u30B5\u30B7\u30B9\u30BB\u30BD\u30BF\u30C1\u30C4\u30C6\u30C8\u30CA\u30CB\u30CC\u30CD\u30CE\u30CF\u30D2\u30D5\u30D8\u30DB\u30DE\u30DF\u30E0\u30E1\u30E2\u30E4\u30E6\u30E8\u30E9\u30EA\u30EB\u30EC\u30ED\u30EF\u30F2\u30F3';
+  var numbers = '0123456789';
+  var mathSymbols = '\u00D7\u00F7\u2206\u03A3\u03A0\u221A\u221E\u2248\u2260\u2264\u2265\u222B\u2202\u03B1\u03B2\u03B3\u03B8\u03C6\u03C8\u03C9';
+  var allChars = katakana + numbers + mathSymbols;
+
+  function randomChar() { return allChars[Math.floor(Math.random() * allChars.length)]; }
+
+  var columns = [];
+  var waterSurface = 0;
+  var ripples = [];
+  var MAX_RIPPLES = 40;
+  var wavePoints = [];
+  var WAVE_RESOLUTION = 4;
+
+  function initColumns() {
+    waterSurface = height * 0.78;
+    var colWidth = FONT_SIZE;
+    var colCount = Math.floor(width / colWidth);
+    var newColumns = [];
+    for (var i = 0; i < colCount; i++) {
+      var existing = columns[i];
+      if (existing) { existing.x = i * colWidth; newColumns.push(existing); }
+      else { newColumns.push(createColumn(i, true)); }
+    }
+    columns = newColumns;
+    var waveCount = Math.ceil(width / WAVE_RESOLUTION) + 1;
+    var newWave = [];
+    for (var w = 0; w < waveCount; w++) newWave.push({ y: 0, vy: 0 });
+    wavePoints = newWave;
+  }
+
+  function createColumn(index, scatter) {
+    var trailLen = 12 + Math.floor(Math.random() * 20);
+    var maxChars = trailLen + 5;
+    var chars = [];
+    for (var j = 0; j < maxChars; j++) chars.push({ char: randomChar(), cycleTimer: Math.random() * 3, cycleRate: 0.5 + Math.random() * 2 });
+    var startY;
+    if (scatter) {
+      if (Math.random() < COLUMN_DENSITY) startY = Math.random() * (waterSurface + trailLen * FONT_SIZE) - trailLen * FONT_SIZE * 0.3;
+      else startY = -trailLen * FONT_SIZE - Math.random() * height * 0.5;
+    } else { startY = -trailLen * FONT_SIZE * Math.random() * 0.3; }
+    return {
+      x: index * FONT_SIZE, y: startY, speed: 1.2 + Math.random() * 2.5, length: trailLen,
+      chars: chars, active: scatter ? Math.random() < (COLUMN_DENSITY + 0.2) : Math.random() < COLUMN_DENSITY,
+      restartDelay: 0, opacity: 0.6 + Math.random() * 0.4, hitWater: false
+    };
+  }
+
+  function spawnRipple(x, y) {
+    if (ripples.length >= MAX_RIPPLES) ripples.shift();
+    ripples.push({ x: x, y: y, radius: 0, maxRadius: 30 + Math.random() * 50, speed: 20 + Math.random() * 30, life: 1.0, decay: 0.3 + Math.random() * 0.2 });
+  }
+
+  function disturbWave(x, force) {
+    var idx = Math.floor(x / WAVE_RESOLUTION);
+    var spread = 3;
+    for (var i = -spread; i <= spread; i++) {
+      var wi = idx + i;
+      if (wi >= 0 && wi < wavePoints.length) { wavePoints[wi].vy += force * (1 - Math.abs(i) / (spread + 1)); }
+    }
+  }
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    initColumns();
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+
+  var RAIN_DELAY = 0.4;
+  var startTime = 0;
+  var lastTime = 0;
+
+  function render(timestamp) {
+    if (!startTime) startTime = timestamp;
+    var elapsed = (timestamp - startTime) / 1000;
+    if (elapsed < RAIN_DELAY) { requestAnimationFrame(render); return; }
+    if (!lastTime) lastTime = timestamp;
+    var dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+    lastTime = timestamp;
+    var time = timestamp / 1000;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, width, height);
+
+    for (var i = 0; i < columns.length; i++) {
+      var col = columns[i];
+      if (!col.active) {
+        col.restartDelay -= dt;
+        if (col.restartDelay <= 0) {
+          if (Math.random() < COLUMN_DENSITY) {
+            col.active = true; col.y = -col.length * FONT_SIZE * Math.random() * 0.3;
+            col.speed = 1.2 + Math.random() * 2.5; col.length = 12 + Math.floor(Math.random() * 20);
+            col.opacity = 0.6 + Math.random() * 0.4; col.hitWater = false;
+            for (var c = 0; c < col.chars.length; c++) col.chars[c].char = randomChar();
+          } else { col.restartDelay = 0.3 + Math.random() * 1.5; }
+        }
+        continue;
+      }
+      var prevY = col.y;
+      col.y += col.speed * FALL_SPEED * dt * 60;
+      for (var j = 0; j < col.chars.length; j++) {
+        col.chars[j].cycleTimer -= dt;
+        if (col.chars[j].cycleTimer <= 0) { col.chars[j].char = randomChar(); col.chars[j].cycleTimer = col.chars[j].cycleRate; }
+      }
+      if (!col.hitWater && col.y >= waterSurface && prevY < waterSurface) {
+        col.hitWater = true; spawnRipple(col.x + FONT_SIZE * 0.5, waterSurface); disturbWave(col.x + FONT_SIZE * 0.5, -2 - Math.random() * 3);
+      }
+      var tailY = col.y - col.length * FONT_SIZE;
+      if (tailY > waterSurface + 30) { col.active = false; col.restartDelay = 0.2 + Math.random() * 2; }
+    }
+
+    var ri = ripples.length;
+    while (ri--) {
+      var r = ripples[ri]; r.radius += r.speed * dt; r.life -= r.decay * dt;
+      if (r.life <= 0 || r.radius > r.maxRadius) ripples.splice(ri, 1);
+    }
+
+    var damping = 0.97, tension = 0.03, spread = 0.25;
+    for (var i = 0; i < wavePoints.length; i++) {
+      var p = wavePoints[i]; p.vy += -tension * p.y; p.vy *= damping; p.y += p.vy;
+    }
+    for (var pass = 0; pass < 3; pass++) {
+      for (var i = 0; i < wavePoints.length; i++) {
+        if (i > 0) wavePoints[i].vy += spread * (wavePoints[i - 1].y - wavePoints[i].y);
+        if (i < wavePoints.length - 1) wavePoints[i].vy += spread * (wavePoints[i + 1].y - wavePoints[i].y);
+      }
+    }
+
+    ctx.font = FONT_SIZE + 'px "SF Mono", "Fira Code", "Cascadia Code", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    for (var i = 0; i < columns.length; i++) {
+      var col = columns[i];
+      if (!col.active) continue;
+      for (var j = 0; j < col.length; j++) {
+        var charY = col.y - j * FONT_SIZE;
+        if (charY > waterSurface || charY < -FONT_SIZE) continue;
+        var charIndex = j % col.chars.length;
+        var trailFraction = j / col.length;
+        var brightness;
+        if (j === 0) brightness = 1.0;
+        else if (j === 1) brightness = 0.9;
+        else if (j < 4) brightness = 0.75 - (j - 2) * 0.08;
+        else brightness = Math.max(0, 0.6 * (1 - trailFraction));
+        var distToWater = waterSurface - charY;
+        if (distToWater < FONT_SIZE * 3) brightness *= Math.max(0, distToWater / (FONT_SIZE * 3));
+        brightness *= col.opacity;
+        if (brightness < 0.02) continue;
+        var r, g, b;
+        if (j === 0) { r = 255; g = 245; b = 220; }
+        else if (j < 3) { r = 240; g = 200; b = 140; }
+        else { r = 200; g = 149; b = 108; }
+        ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + brightness + ')';
+        if (j === 0) { ctx.shadowColor = 'rgba(255, 220, 160, 0.6)'; ctx.shadowBlur = 8; }
+        ctx.fillText(col.chars[charIndex].char, col.x + FONT_SIZE * 0.5, charY);
+        if (j === 0) { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; }
+      }
+    }
+
+    var waterGrad = ctx.createLinearGradient(0, waterSurface, 0, height);
+    waterGrad.addColorStop(0, 'rgba(15, 13, 11, 0.6)');
+    waterGrad.addColorStop(0.3, 'rgba(12, 11, 10, 0.85)');
+    waterGrad.addColorStop(1, 'rgba(10, 10, 10, 0.95)');
+    ctx.fillStyle = waterGrad;
+    ctx.fillRect(0, waterSurface - 2, width, height - waterSurface + 2);
+
+    ctx.beginPath();
+    for (var x = 0; x <= width; x += WAVE_RESOLUTION) {
+      var idx = Math.floor(x / WAVE_RESOLUTION);
+      var waveY = idx < wavePoints.length ? wavePoints[idx].y : 0;
+      var ambient = Math.sin(x * 0.01 + time * 0.8) * 1.5 + Math.sin(x * 0.023 + time * 0.5) * 1.0 + Math.sin(x * 0.007 + time * 0.3) * 2.0;
+      var py = waterSurface + waveY + ambient;
+      if (x === 0) ctx.moveTo(x, py);
+      else ctx.lineTo(x, py);
+    }
+    ctx.strokeStyle = 'rgba(200, 170, 130, 0.25)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    for (var i = 0; i < ripples.length; i++) {
+      var r = ripples[i];
+      var alpha = r.life * 0.3;
+      for (var ring = 0; ring < 3; ring++) {
+        var ringRadius = r.radius - ring * 8;
+        if (ringRadius <= 0) continue;
+        var ringAlpha = alpha * (1 - ring * 0.3);
+        ctx.beginPath();
+        ctx.ellipse(r.x, r.y + ring * 2, ringRadius, ringRadius * 0.3, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(200, 170, 130, ' + ringAlpha + ')';
+        ctx.lineWidth = 1 - ring * 0.2;
+        ctx.stroke();
+      }
+    }
+
+    requestAnimationFrame(render);
+  }
+
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

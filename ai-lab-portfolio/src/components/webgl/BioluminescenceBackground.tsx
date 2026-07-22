@@ -1,0 +1,389 @@
+"use client";
+
+import { useEffect, useRef } from 'react';
+
+export function BioluminescenceBackground() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' })
+      || canvas.getContext('webgl', { alpha: false, antialias: false, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+    if (!gl) return;
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const dpr = Math.min(window.devicePixelRatio || 1, 1);
+
+    const vertSrc = [
+      'attribute vec2 a_pos;',
+      'void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }'
+    ].join('\n');
+
+    const fragSrc = [
+      'precision highp float;',
+      'uniform float u_time;',
+      'uniform vec2 u_res;',
+      'uniform float u_glowIntensity;',
+      'uniform float u_waveSpeed;',
+      'uniform vec2 u_mouse;',
+      '',
+      '#define PI 3.14159265359',
+      '#define TAU 6.28318530718',
+      '',
+      '// ── Hash & noise primitives ──',
+      '// (sin-free hashes: avoid precision breakdown on large coordinates)',
+      'float hash(vec2 p) {',
+      '  vec3 p3 = fract(vec3(p.xyx) * 0.1031);',
+      '  p3 += dot(p3, p3.yzx + 33.33);',
+      '  return fract((p3.x + p3.y) * p3.z);',
+      '}',
+      '',
+      'float hash1(float n) {',
+      '  n = fract(n * 0.1031);',
+      '  n *= n + 33.33;',
+      '  n *= n + n;',
+      '  return fract(n);',
+      '}',
+      '',
+      'float noise(vec2 p) {',
+      '  vec2 i = floor(p);',
+      '  vec2 f = fract(p);',
+      '  f = f * f * (3.0 - 2.0 * f);',
+      '  float a = hash(i);',
+      '  float b = hash(i + vec2(1.0, 0.0));',
+      '  float c = hash(i + vec2(0.0, 1.0));',
+      '  float d = hash(i + vec2(1.0, 1.0));',
+      '  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);',
+      '}',
+      '',
+      '// ── FBM for layered detail ──',
+      'float fbm(vec2 p, int octaves) {',
+      '  float val = 0.0;',
+      '  float amp = 0.5;',
+      '  float freq = 1.0;',
+      '  for (int i = 0; i < 8; i++) {',
+      '    if (i >= octaves) break;',
+      '    val += amp * noise(p * freq);',
+      '    freq *= 2.03;',
+      '    amp *= 0.49;',
+      '    p += vec2(1.7, 9.2);',
+      '  }',
+      '  return val;',
+      '}',
+      '',
+      '// ── Domain-warped noise for organic flow ──',
+      '// (single-level warp — cheaper than a double warp, still reads as organic)',
+      'float warpedNoise(vec2 p, float t) {',
+      '  vec2 q = vec2(',
+      '    fbm(p + vec2(0.0, 0.0) + t * 0.04, 2),',
+      '    fbm(p + vec2(5.2, 1.3) + t * 0.03, 2)',
+      '  );',
+      '  return fbm(p + 3.0 * q, 3);',
+      '}',
+      '',
+      '// ── Ocean wave height field ──',
+      'vec2 oceanWaves(vec2 p, float t) {',
+      '  float h = 0.0;',
+      '  float d = 0.0;',
+      '  float amp = 1.0;',
+      '  float freq = 1.0;',
+      '',
+      '  // Layer multiple wave directions for realistic ocean',
+      '  for (int i = 0; i < 4; i++) {',
+      '    float fi = float(i);',
+      '    float angle = fi * 0.7 + 0.3;',
+      '    vec2 dir = vec2(cos(angle), sin(angle));',
+      '    float phase = dot(p * freq, dir) + t * (0.6 + fi * 0.15);',
+      '    float wave = sin(phase) * 0.5 + 0.5;',
+      '    // Sharp crests via pow',
+      '    float sharpWave = pow(wave, 1.5);',
+      '    h += sharpWave * amp;',
+      '    // Disturbance is highest at wave crests',
+      '    d += pow(wave, 3.0) * amp;',
+      '    amp *= 0.55;',
+      '    freq *= 1.8;',
+      '  }',
+      '  return vec2(h, d);',
+      '}',
+      '',
+      '// ── Breaking wave / foam line detection ──',
+      'float waveBreak(vec2 uv, float t) {',
+      '  float breaks = 0.0;',
+      '  for (int i = 0; i < 4; i++) {',
+      '    float fi = float(i);',
+      '    float y_center = 0.1 + fi * 0.22;',
+      '    float wave_x = uv.x * (2.0 + fi * 0.8) + t * (0.15 + fi * 0.05);',
+      '    float undulation = sin(wave_x) * 0.03 + sin(wave_x * 2.3 + fi) * 0.015;',
+      '    float dist_to_wave = abs(uv.y - y_center - undulation);',
+      '    float breakLine = smoothstep(0.03, 0.0, dist_to_wave);',
+      '    float modulation = noise(vec2(uv.x * 3.0 + fi * 10.0, t * 0.2 + fi));',
+      '    modulation = smoothstep(0.35, 0.7, modulation);',
+      '    breaks += breakLine * modulation * (1.0 - fi * 0.2);',
+      '  }',
+      '  return breaks;',
+      '}',
+      '',
+      '// ── Bioluminescent glow patterns ──',
+      'float bioGlow(vec2 uv, float t) {',
+      '  float glow = 0.0;',
+      '',
+      '  // Large-scale wave disturbance triggering glow',
+      '  vec2 wv = oceanWaves(uv * 3.0, t * 0.8);',
+      '  float disturbance = wv.y;',
+      '',
+      '  // Domain-warped organic glow patterns',
+      '  float organic1 = warpedNoise(uv * 4.0 + vec2(t * 0.06, t * 0.04), t * 0.5);',
+      '  float organic2 = warpedNoise(uv * 6.0 + vec2(-t * 0.05, t * 0.07), t * 0.4);',
+      '',
+      '  // Glow is triggered where waves disturb the water',
+      '  glow += organic1 * disturbance * 0.8;',
+      '  glow += organic2 * pow(disturbance, 2.0) * 0.5;',
+      '',
+      '  // Swirling tendrils of light — eddies and currents',
+      '  vec2 eddy_uv = uv * 5.0 + vec2(t * 0.08, t * 0.05);',
+      '  float eddy = fbm(eddy_uv, 3);',
+      '  float eddy_curl = abs(eddy - fbm(eddy_uv + vec2(0.01, 0.0), 3)) * 80.0;',
+      '  glow += eddy_curl * disturbance * 0.25;',
+      '',
+      '  // Scattered bright plankton clusters',
+      '  for (int i = 0; i < 5; i++) {',
+      '    float fi = float(i);',
+      '    vec2 center = vec2(',
+      '      hash1(fi * 13.7 + 1.0) * 1.6 - 0.3,',
+      '      hash1(fi * 7.3 + 2.0) * 1.2 - 0.1',
+      '    );',
+      '    // Drift with current',
+      '    center.x += sin(t * 0.05 + fi * 2.0) * 0.15;',
+      '    center.y += cos(t * 0.04 + fi * 1.5) * 0.08;',
+      '    float d = length(uv - center);',
+      '    float cluster = exp(-d * d / (0.015 + hash1(fi * 3.1) * 0.02));',
+      '    float pulse = sin(t * (0.3 + fi * 0.1) + fi * 4.0) * 0.5 + 0.5;',
+      '    glow += cluster * pulse * disturbance * 1.2;',
+      '  }',
+      '',
+      '  return glow;',
+      '}',
+      '',
+      '// ── Individual bright plankton sparks ──',
+      'float planktonSparks(vec2 uv, float t, float disturbance) {',
+      '  float sparks = 0.0;',
+      '  for (int i = 0; i < 14; i++) {',
+      '    float fi = float(i);',
+      '    vec2 pos = vec2(',
+      '      hash1(fi * 17.3 + 100.0),',
+      '      hash1(fi * 11.9 + 200.0)',
+      '    );',
+      '    // Drift in current',
+      '    pos.x = fract(pos.x + t * (0.01 + hash1(fi * 5.1 + 300.0) * 0.02));',
+      '    pos.y = fract(pos.y + sin(t * 0.3 + fi) * 0.02);',
+      '',
+      '    float d = length(uv - pos);',
+      '    float size = 0.001 + hash1(fi * 3.7 + 400.0) * 0.003;',
+      '    float spark = smoothstep(size, 0.0, d);',
+      '',
+      '    float trigger = smoothstep(0.2, 0.6, disturbance);',
+      '',
+      '    float twinkle = sin(t * (1.0 + hash1(fi * 2.3) * 3.0) + fi * 7.0);',
+      '    twinkle = twinkle * 0.5 + 0.5;',
+      '',
+      '    sparks += spark * trigger * twinkle * 0.8;',
+      '  }',
+      '  return sparks;',
+      '}',
+      '',
+      'void main() {',
+      '  vec2 uv = gl_FragCoord.xy / u_res;',
+      '  float aspect = u_res.x / u_res.y;',
+      '  vec2 uvAspect = vec2(uv.x * aspect, uv.y);',
+      '  float t = u_time * u_waveSpeed;',
+      '',
+      '  // ── Deep ocean base color ──',
+      '  vec3 deepColor = vec3(0.012, 0.007, 0.0);',
+      '  vec3 midColor = vec3(0.019, 0.012, 0.001);',
+      '  vec3 surfaceColor = vec3(0.023, 0.015, 0.001);',
+      '  vec3 col = mix(deepColor, surfaceColor, uv.y);',
+      '',
+      '  // ── Subtle underwater caustic light from moonlight ──',
+      '  float caustic1 = noise(uvAspect * 8.0 + vec2(t * 0.12, t * 0.08));',
+      '  float caustic2 = noise(uvAspect * 12.0 + vec2(-t * 0.1, t * 0.15));',
+      '  float causticPattern = caustic1 * caustic2;',
+      '  causticPattern = pow(causticPattern, 2.0) * 3.0;',
+      '  float surfaceFade = smoothstep(0.3, 0.95, uv.y);',
+      '  col += vec3(0.034, 0.021, 0.005) * causticPattern * surfaceFade;',
+      '',
+      '  // ── Ocean wave structure ──',
+      '  vec2 waves = oceanWaves(uvAspect * 2.5, t);',
+      '  float waveHeight = waves.x;',
+      '  float waveDisturbance = waves.y;',
+      '',
+      '  // Subtle wave shading — dark troughs, slightly lit crests',
+      '  col += vec3(0.02, 0.012, 0.005) * waveHeight * 0.3;',
+      '',
+      '  // ── BIOLUMINESCENCE ──',
+      '  float bio = bioGlow(uvAspect, t) * u_glowIntensity;',
+      '',
+      '  // ── Mouse attraction: brighten glow near cursor ──',
+      '  if (u_mouse.x > 0.0) {',
+      '    vec2 mUV = u_mouse / u_res;',
+      '    vec2 mAspect = vec2(mUV.x * aspect, mUV.y);',
+      '    float mDist = length(uvAspect - mAspect);',
+      '    float attract = exp(-mDist * mDist * 10.0) * 0.9;',
+      '    bio += attract * u_glowIntensity;',
+      '  }',
+      '',
+      '  // Wave-break bioluminescence — brightest at breaking wave lines',
+      '  // (computed once, reused below for the foam pass too)',
+      '  float breaks = waveBreak(uvAspect, t);',
+      '  bio += breaks * 0.9 * u_glowIntensity;',
+      '',
+      '  // Shape the glow — more concentrated, less uniform',
+      '  bio = pow(max(bio, 0.0), 1.3);',
+      '',
+      '  // Bioluminescent color: warm amber tones',
+      '  vec3 bioColor1 = vec3(0.55, 0.26, 0.0);',
+      '  vec3 bioColor2 = vec3(0.90, 0.36, 0.41);',
+      '  vec3 bioColor3 = vec3(1.0, 0.53, 0.37);',
+      '',
+      '  // Vary color across the scene for natural variation',
+      '  float colorVar = noise(uvAspect * 2.0 + t * 0.02);',
+      '  vec3 bioCol = mix(bioColor1, bioColor2, colorVar);',
+      '  bioCol = mix(bioCol, bioColor3, smoothstep(0.5, 1.0, bio));',
+      '',
+      '  // Add the glow — additive blending',
+      '  col += bioCol * bio * 0.55;',
+      '',
+      '  // ── Bright plankton sparks ──',
+      '  float sparks = planktonSparks(uv, t, waveDisturbance);',
+      '  vec3 sparkColor = vec3(1.0, 0.67, 0.52);',
+      '  col += sparkColor * sparks * u_glowIntensity * 0.7;',
+      '',
+      '  // ── Wave foam with bioluminescent edge ──',
+      '  // (reuses `breaks` computed above instead of recalculating it)',
+      '  float foam = breaks;',
+      '  float foamDetail = noise(uvAspect * 25.0 + t * 0.3);',
+      '  foam *= foamDetail;',
+      '  col += vec3(0.70, 0.36, 0.28) * foam * 0.3 * u_glowIntensity;',
+      '',
+      '  // ── Flowing current streaks ──',
+      '  float streak_uv_y = uv.y * 15.0;',
+      '  float streakNoise = noise(vec2(uvAspect.x * 3.0 + t * 0.15, streak_uv_y));',
+      '  float streak = pow(streakNoise, 5.0) * 2.0;',
+      '  streak *= waveDisturbance;',
+      '  col += vec3(0.38, 0.18, 0.06) * streak * u_glowIntensity;',
+      '',
+      '  // ── Surface reflection / bright zone near top ──',
+      '  float surfaceGlow = smoothstep(0.7, 1.0, uv.y);',
+      '  float surfaceWave = noise(vec2(uvAspect.x * 4.0 + t * 0.1, t * 0.2));',
+      '  col += vec3(0.028, 0.018, 0.001) * surfaceGlow * surfaceWave;',
+      '',
+      '  // ── Depth fog — darker in the deep ──',
+      '  float depthFog = smoothstep(0.6, 0.0, uv.y);',
+      '  col = mix(col, deepColor * 0.5, depthFog * 0.4);',
+      '',
+      '  // ── Moonlight from above ──',
+      '  vec2 moonUV = uv - vec2(0.5, 1.0);',
+      '  float moonDist = length(moonUV * vec2(1.0, 1.5));',
+      '  float moonLight = exp(-moonDist * moonDist * 3.0);',
+      '  col += vec3(0.034, 0.021, 0.005) * moonLight;',
+      '',
+      '  // ── Vignette ──',
+      '  vec2 vigUV = uv - 0.5;',
+      '  float vig = 1.0 - dot(vigUV, vigUV) * 1.8;',
+      '  vig = clamp(vig, 0.0, 1.0);',
+      '  col *= 0.5 + vig * 0.5;',
+      '',
+      '  // ── Tone mapping & color grading ──',
+      '  col = max(col, vec3(0.0));',
+      '  col = pow(max(col, 0.0), vec3(0.95, 1.0, 1.02));',
+      '',
+      '  gl_FragColor = vec4(col, 1.0);',
+      '}'
+    ].join('\n');
+
+    function compile(type: number, src: string) {
+      const s = gl!.createShader(type)!;
+      gl!.shaderSource(s, src);
+      gl!.compileShader(s);
+      return s;
+    }
+
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vertSrc));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fragSrc));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const buf = gl.createBuffer()!;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(prog, 'a_pos');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    const uTime = gl.getUniformLocation(prog, 'u_time');
+    const uRes = gl.getUniformLocation(prog, 'u_res');
+    const uGlowIntensity = gl.getUniformLocation(prog, 'u_glowIntensity');
+    const uWaveSpeed = gl.getUniformLocation(prog, 'u_waveSpeed');
+    const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+    let mouseXVal = -1.0, mouseYVal = -1.0;
+    const glowIntensityVal = 0.35;
+    const waveSpeedVal = 1.4;
+    let animationFrameId: number;
+
+    function render(now: number) {
+      const w = Math.round(canvas!.clientWidth * dpr);
+      const h = Math.round(canvas!.clientHeight * dpr);
+      if (canvas!.width !== w || canvas!.height !== h) {
+        canvas!.width = w;
+        canvas!.height = h;
+        gl!.viewport(0, 0, w, h);
+        gl!.uniform2f(uRes, canvas!.width, canvas!.height);
+      }
+      gl!.uniform1f(uTime, prefersReduced ? 0.0 : now * 0.001);
+      gl!.uniform1f(uGlowIntensity, glowIntensityVal);
+      gl!.uniform1f(uWaveSpeed, waveSpeedVal);
+      gl!.uniform2f(uMouse, mouseXVal, mouseYVal);
+      gl!.clear(gl!.COLOR_BUFFER_BIT);
+      gl!.drawArrays(gl!.TRIANGLES, 0, 3);
+      animationFrameId = requestAnimationFrame(render);
+    }
+
+    const handleResize = () => {
+      const w = Math.round(canvas!.clientWidth * dpr);
+      const h = Math.round(canvas!.clientHeight * dpr);
+      if (canvas!.width !== w || canvas!.height !== h) {
+        canvas!.width = w;
+        canvas!.height = h;
+        gl!.viewport(0, 0, w, h);
+        gl!.uniform2f(uRes, canvas!.width, canvas!.height);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    animationFrameId = requestAnimationFrame(render);
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseXVal = e.clientX * dpr;
+      mouseYVal = (canvas!.clientHeight - e.clientY) * dpr;
+    };
+    const handleMouseLeave = () => { mouseXVal = -1.0; mouseYVal = -1.0; };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 block w-screen h-screen z-0 pointer-events-none"
+    />
+  );
+}

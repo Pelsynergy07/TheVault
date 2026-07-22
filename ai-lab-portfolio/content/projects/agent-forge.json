@@ -1,0 +1,66 @@
+{
+  "slug": "agent-forge",
+  "title": "Agent Forge",
+  "tagline": "Visual workflow builder for LLM agent chains",
+  "description": "A drag-and-drop IDE for building, testing, and deploying LLM agent workflows. Combines a visual node editor with a runtime for executing complex multi-agent systems.",
+  "status": "Production",
+  "tags": ["AI", "Agents", "Automation", "Product"],
+  "links": {
+    "demo": "https://agent-forge.dev",
+    "github": "https://github.com/username/agent-forge"
+  },
+  "slides": [
+    {
+      "id": "slide-1",
+      "title": "The Problem",
+      "type": "problem",
+      "content": "Building multi-agent LLM systems requires stitching together prompts, tools, memory, and orchestration logic in code. There's no visual interface to design, test, and debug agent workflows — making agent development inaccessible to non-engineers and slow for engineers."
+    },
+    {
+      "id": "slide-2",
+      "title": "Why It Matters",
+      "type": "why",
+      "content": "Agentic AI is the most promising paradigm for complex task automation, but the tooling is stuck in terminal-and-YAML mode. Making agent workflows visual and interactive accelerates experimentation and democratizes who can build with AI."
+    },
+    {
+      "id": "slide-3",
+      "title": "The Solution",
+      "type": "solution",
+      "content": "Agent Forge is a visual node editor built with React Flow, where each node represents an agent, tool, memory store, or decision gate. Users drag to connect nodes, configure parameters in context panels, and hit play to execute the workflow in real-time with streaming output."
+    },
+    {
+      "id": "slide-4",
+      "title": "Technical Architecture",
+      "type": "architecture",
+      "content": "The frontend uses React Flow for the node graph with custom node types for different agent primitives. The execution engine runs in a WebWorker with a Directed Acyclic Graph (DAG) scheduler. Each node communicates via a message-passing protocol. The backend (FastAPI) manages persistent agent state, tool execution, and LLM API routing. Workflows export as JSON or Python.",
+      "media": {
+        "type": "image",
+        "src": "/images/agent-forge-ui.png",
+        "alt": "Agent Forge visual node editor interface"
+      }
+    },
+    {
+      "id": "slide-5",
+      "title": "Results & Impact",
+      "type": "results",
+      "content": "Launched as open-source and reached 8K GitHub stars in 3 months. Used by 2 startups as their primary agent development tool. Average workflow creation time dropped from hours to minutes compared to code-only approaches."
+    },
+    {
+      "id": "slide-6",
+      "title": "Learnings",
+      "type": "learnings",
+      "content": "The biggest lesson was that debugging agent workflows requires visibility — we added step-by-step execution traces and variable inspection. Next: a marketplace for sharing workflow templates and a hosted runtime with monitoring."
+    }
+  ],
+  "questionnaire": {
+    "problem": "Multi-agent LLM systems require stitching together prompts, tools, and orchestration in code.",
+    "whyMattered": "Agentic AI needs better tooling to accelerate experimentation and democratize access.",
+    "howBuilt": "React Flow node editor, WebWorker DAG scheduler, FastAPI backend, message-passing protocol.",
+    "biggestChallenge": "Building a real-time execution engine that can pause, inspect, and resume workflows mid-stream.",
+    "outcome": "8K GitHub stars, adopted by 2 startups, workflow creation from hours to minutes.",
+    "improveNext": "Step-through debugging, workflow marketplace, hosted runtime with monitoring."
+  },
+  "date": "2025-03-10",
+  "featured": true,
+  "color": "#eab308"
+}
