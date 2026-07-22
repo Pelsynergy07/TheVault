@@ -285,7 +285,7 @@ export function BioluminescenceBackground() {
     const uMouse = gl.getUniformLocation(prog, 'u_mouse');
 
     let mouseXVal = -1.0, mouseYVal = -1.0;
-    const glowIntensityVal = 0.35;
+    const glowIntensityVal = 0.55;
     const waveSpeedVal = 1.4;
     let animationFrameId: number;
 
