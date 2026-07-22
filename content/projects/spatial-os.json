@@ -1,0 +1,66 @@
+{
+  "slug": "spatial-os",
+  "title": "Spatial OS",
+  "tagline": "A window manager for spatial computing environments",
+  "description": "Designed and prototyped a spatial operating system concept for XR headsets, featuring gesture-driven window management, persistent application state, and multi-modal input.",
+  "status": "Prototype",
+  "tags": ["XR", "Product", "Research"],
+  "links": {
+    "demo": "https://spatial-os.demo",
+    "github": "https://github.com/username/spatial-os"
+  },
+  "slides": [
+    {
+      "id": "slide-1",
+      "title": "The Problem",
+      "type": "problem",
+      "content": "Current XR operating systems replicate 2D desktop metaphors in 3D space — floating flat panels, clunky pinch-to-click, no persistent spatial memory. This ignores the spatial nature of the medium and limits productivity in mixed reality."
+    },
+    {
+      "id": "slide-2",
+      "title": "Why It Matters",
+      "type": "why",
+      "content": "XR is the next computing platform, but it won't replace desktops until the UX is fundamentally better — not just a 2D UI floating in space. Spatial OS explores what a native spatial computing paradigm looks like: windows as physical objects, gestures as verbs, and space as persistent state."
+    },
+    {
+      "id": "slide-3",
+      "title": "The Solution",
+      "type": "solution",
+      "content": "Built a prototype using Three.js and WebXR that treats application windows as physics-enabled 3D objects. Windows can be stacked, thrown, pinned to real-world surfaces, and grouped into spatial workspaces. Input combines hand tracking, eye gaze, and voice commands in a layered interaction model."
+    },
+    {
+      "id": "slide-4",
+      "title": "Technical Architecture",
+      "type": "architecture",
+      "content": "The system uses a component-entity architecture with a spatial physics engine (Cannon.js) for window physics. A spatial anchor system maps digital content to real-world surfaces using WebXR anchors. The input layer processes hand tracking, eye gaze (WebGazer), and voice (Web Speech API) through a priority-weighted fusion engine.",
+      "media": {
+        "type": "video",
+        "src": "/images/spatial-os-demo.mp4",
+        "alt": "Demo of Spatial OS gesture interactions"
+      }
+    },
+    {
+      "id": "slide-5",
+      "title": "Results & Impact",
+      "type": "results",
+      "content": "User testing showed 40% faster task completion for multi-window workflows compared to current XR OS UX patterns. The spatial persistence model was presented at a XR conference and influenced design discussions at two hardware companies."
+    },
+    {
+      "id": "slide-6",
+      "title": "Learnings",
+      "type": "learnings",
+      "content": "Eye gaze as primary input is more natural but less precise than hand tracking — next version will use a hybrid model. Physics-based windows need damping to avoid nausea. I'd also implement a spatial bookmarking system for saving and restoring workspace layouts."
+    }
+  ],
+  "questionnaire": {
+    "problem": "XR operating systems replicate 2D desktop metaphors in 3D space.",
+    "whyMattered": "XR won't replace desktops until the UX is fundamentally better for the medium.",
+    "howBuilt": "Three.js + WebXR, Cannon.js physics, WebGazer eye tracking, Web Speech API.",
+    "biggestChallenge": "Fusing eye gaze, hand tracking, and voice into a reliable unified input model.",
+    "outcome": "40% faster multi-window task completion, presented at XR conference.",
+    "improveNext": "Hybrid eye + hand input model, physics damping, spatial bookmarking."
+  },
+  "date": "2025-04-22",
+  "featured": true,
+  "color": "#0d7377"
+}

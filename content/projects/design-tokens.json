@@ -1,0 +1,61 @@
+{
+  "slug": "design-tokens",
+  "title": "Design Tokens",
+  "tagline": "A design system generator that produces multi-platform token packages",
+  "description": "Built a tool that takes a single source of truth for design tokens and generates platform-specific packages for web, iOS, Android, and Figma.",
+  "status": "Production",
+  "tags": ["Design Systems", "Automation", "Product"],
+  "links": {
+    "demo": "https://design-tokens-demo.vercel.app",
+    "github": "https://github.com/username/design-tokens"
+  },
+  "slides": [
+    {
+      "id": "slide-1",
+      "title": "The Problem",
+      "type": "problem",
+      "content": "Design systems struggle with token synchronization across platforms. Colors, spacing, and typography values drift between Figma, web CSS, iOS SwiftUI, and Android Compose — leading to inconsistency and manual sync work."
+    },
+    {
+      "id": "slide-2",
+      "title": "Why It Matters",
+      "type": "why",
+      "content": "A multi-platform product is only as good as its visual consistency. When design tokens drift, the brand fragments. Automating token distribution eliminates an entire class of inconsistency bugs."
+    },
+    {
+      "id": "slide-3",
+      "title": "The Solution",
+      "type": "solution",
+      "content": "A CLI tool + GitHub Action that reads a single YAML token file and generates platform-optimized output: CSS custom properties, Tailwind config, Swift enum, Compose object, and a Figma JSON plugin format."
+    },
+    {
+      "id": "slide-4",
+      "title": "Technical Architecture",
+      "type": "architecture",
+      "content": "The core is a composable pipeline: parse → transform → generate. Token definitions in YAML are parsed into an AST, transformed through platform-specific mutators (e.g., camelCase for Swift, kebab-case for CSS), and rendered via Handlebars templates."
+    },
+    {
+      "id": "slide-5",
+      "title": "Results & Impact",
+      "type": "results",
+      "content": "Reduced token sync time from 2 hours to instant. Used across 5 products in 2 companies. Open-source release with 600+ stars and 15 contributors."
+    },
+    {
+      "id": "slide-6",
+      "title": "Learnings",
+      "type": "learnings",
+      "content": "The AST approach was over-abstracted — a simpler JSON-to-target mapping would have covered 90% of use cases. Component-specific tokens (vs. global) would better serve real design system needs."
+    }
+  ],
+  "questionnaire": {
+    "problem": "Design tokens drift across platforms causing visual inconsistency.",
+    "whyMattered": "Multi-platform products need automated token sync to maintain brand consistency.",
+    "howBuilt": "YAML-based token definitions, composable AST pipeline, Handlebars templates.",
+    "biggestChallenge": "Handling platform-specific token transformations while keeping a single source of truth.",
+    "outcome": "Sync time from 2 hours to instant, used in 5 products, 600+ GitHub stars.",
+    "improveNext": "Simplify to JSON-to-target mapping, add component-specific token scoping."
+  },
+  "date": "2024-11-05",
+  "featured": false,
+  "color": "#0891b2"
+}

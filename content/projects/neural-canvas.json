@@ -1,0 +1,72 @@
+{
+  "slug": "neural-canvas",
+  "title": "Neural Canvas",
+  "tagline": "Real-time generative art powered by diffusion models on the browser",
+  "description": "Built a browser-based generative art engine that runs fine-tuned diffusion models directly in WebGL, enabling real-time AI image synthesis without server calls.",
+  "status": "Hackathon",
+  "tags": [
+    "WebGL",
+    "3D",
+    "Research",
+    "Design Systems",
+    "AI"
+  ],
+  "links": {
+    "demo": "https://neural-canvas.demo",
+    "github": "https://github.com/username/neural-canvas"
+  },
+  "slides": [
+    {
+      "id": "slide-1",
+      "title": "The Problem",
+      "type": "problem",
+      "content": "Generative AI art tools are either server-dependent (latency, cost, privacy concerns) or produce low-quality results. There was no way to get high-quality, real-time AI generation running entirely in the browser using consumer GPUs."
+    },
+    {
+      "id": "slide-2",
+      "title": "Why It Matters",
+      "type": "why",
+      "content": "Creative tools should work offline, respect privacy, and be instantly available. Shifting inference to the client unlocks interactive art experiences that respond in real-time to user input — painting, drawing, and sculpting with AI as a collaborator, not a remote API."
+    },
+    {
+      "id": "slide-3",
+      "title": "The Solution",
+      "type": "solution",
+      "content": "I built a WebGL-based inference engine that runs a distilled version of Stable Diffusion using ONNX runtime and custom shaders. The model is quantized to 4-bit and split into chunks that execute across GPU compute pipelines. The UI uses React Three Fiber for a 3D canvas where generations appear as textured geometry."
+    },
+    {
+      "id": "slide-4",
+      "title": "Technical Architecture",
+      "type": "architecture",
+      "content": "The architecture has three layers: (1) a WebWorker manages model loading and ONNX inference sessions, (2) a shared memory buffer transfers latent tensors to the main thread, and (3) React Three Fiber renders the output as animated 3D meshes. Custom GLSL shaders handle post-processing — aurora bloom, chromatic aberration, and neural-style transfer effects.",
+      "media": {
+        "type": "diagram",
+        "src": "/images/neural-canvas-arch.png",
+        "alt": "Architecture diagram showing WebWorker, shared memory, and R3F renderer"
+      }
+    },
+    {
+      "id": "slide-5",
+      "title": "Results & Impact",
+      "type": "results",
+      "content": "The engine achieves 3-5 second generation times on mid-range GPUs (RTX 3060) entirely in-browser. It has been used in 3 art installations and received 12K+ stars on GitHub. The model compression technique was adopted by two open-source projects."
+    },
+    {
+      "id": "slide-6",
+      "title": "Learnings",
+      "type": "learnings",
+      "content": "I would rewrite the shader compilation pipeline to use WebGPU instead of WebGL for better compute shader support. The ONNX runtime overhead on mobile is still too high — next iteration will explore WebNN. I'd also add a collaborative mode using WebRTC for multi-user art sessions."
+    }
+  ],
+  "questionnaire": {
+    "problem": "Generative AI art tools are either server-dependent or low-quality in-browser.",
+    "whyMattered": "Creative tools should work offline, respect privacy, and be instantly available.",
+    "howBuilt": "WebGL inference engine with distilled Stable Diffusion, ONNX runtime, React Three Fiber.",
+    "biggestChallenge": "Getting 4-bit quantized diffusion models to run at interactive speeds in WebGL compute shaders.",
+    "outcome": "3-5 second generations on mid-range GPUs, 12K+ GitHub stars, used in 3 art installations.",
+    "improveNext": "Migrate to WebGPU, experiment with WebNN for mobile, add WebRTC collaboration."
+  },
+  "date": "2025-06-15",
+  "featured": true,
+  "color": "#8b5cf6"
+}
