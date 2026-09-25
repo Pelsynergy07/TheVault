@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useCallback } from "react"
+import { useEffect, useCallback, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Command } from "cmdk"
 import { Search, Sun, Moon, ExternalLink, Code2 } from "lucide-react"
@@ -15,6 +15,13 @@ export function CommandMenu({
 }) {
   const router = useRouter()
   const { setTheme } = useTheme()
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(false)
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsAdminUnlocked(sessionStorage.getItem("vault_admin_unlocked") === "true")
+    }
+  }, [open])
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -80,13 +87,15 @@ export function CommandMenu({
                 <ExternalLink size={14} className="text-muted-foreground/40" />
                 Home
               </Command.Item>
-              <Command.Item
-                onSelect={() => { router.push("/admin"); onOpenChange(false) }}
-                className="flex items-center gap-3 px-2 py-2.5 text-sm text-foreground cursor-pointer hover:bg-accent/10 transition-colors"
-              >
-                <Code2 size={14} className="text-muted-foreground/40" />
-                New Project
-              </Command.Item>
+              {isAdminUnlocked && (
+                <Command.Item
+                  onSelect={() => { router.push("/admin"); onOpenChange(false) }}
+                  className="flex items-center gap-3 px-2 py-2.5 text-sm text-foreground cursor-pointer hover:bg-accent/10 transition-colors"
+                >
+                  <Code2 size={14} className="text-muted-foreground/40" />
+                  New Project
+                </Command.Item>
+              )}
             </Command.Group>
           </Command.List>
         </div>

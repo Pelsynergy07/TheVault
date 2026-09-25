@@ -29,11 +29,11 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "AI Lab — Research & Prototypes",
+  title: "Pel's AI Lab",
   description:
     "Personal R&D lab exploring AI, XR, automation, and product experiments. Prototypes, research, and ambitious ideas shipped quickly.",
   openGraph: {
-    title: "AI Lab — Research & Prototypes",
+    title: "Pel's AI Lab",
     description:
       "Personal R&D lab exploring AI, XR, automation, and product experiments.",
     type: "website",
