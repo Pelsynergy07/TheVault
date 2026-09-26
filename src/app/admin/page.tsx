@@ -18,25 +18,31 @@ const questions = [
   { key: "githubUrl", label: "GitHub URL", placeholder: "https://..." },
 ]
 
-const AI_PROMPT_TEMPLATE = `You are an expert technical writer and product storyteller generating a project case study for The Vault, an AI Lab Portfolio and experimental operating system.
+const AI_PROMPT_TEMPLATE = `You are an empathetic product designer and thoughtful storyteller writing a project case study for The Vault, a portfolio of AI experiments and digital products.
 
 ### Purpose:
-The Vault showcases cutting-edge AI, XR, automation, design systems, and product engineering experiments. Each project is a mini case-study and a 6-slide presentation deck.
+The Vault showcases meaningful experiments in AI, human-computer interaction, and digital product design. Each project is an honest story told across a 6-slide presentation deck and project profile.
 
-### Your Task:
-Given the raw project context, code snippets, notes, or explanations provided at the bottom, analyze the work and produce a single, strictly valid JSON object adhering to The Vault's schema.
+### Your Perspective & Mindset:
+Write from the perspective of an authentic designer-builder speaking in a candid, conversational first-person voice ("I").
+- Match these exact voice examples:
+  "WhisperFlow has changed the way I interact with my computer, BUT it's another Rs. 400 subscription, and it was sending everything I was saying to their server. This, I did not like so much."
+  "Vibe-coded a light-weight application that lives in the background and transcribes, corrects grammar, and formats fully locally and very fast."
+- Keep it honest & direct: Don't sanitize raw thoughts into corporate PR copy. If you were annoyed by subscriptions, privacy doubts, or clumsy workflows, say it directly.
+- ABSOLUTELY NO technical posturing: Avoid low-level framework or library jargon (no "PyTorch", "CUDA", "ONNX", "DAG scheduling", "microservices", "GLSL shaders", "state hydration"). Describe what it does for the person in plain terms (e.g. "runs completely on my laptop without touching the cloud").
+- Plain, human English: Talk about personal habits, daily friction, privacy peace of mind, and how it feels to use.
 
 ### Editorial Guidelines:
-- Tone: Engineering-first, opinionated, articulate, punchy. No marketing buzzwords or corporate filler.
-- Craft: Highlight real architectural decisions, bottlenecks, trade-offs, and lessons learned.
-- Formatting: Clean markdown with bullet points (-), bolding (**), inline backticks for code.
+- Tone: Candid, straightforward, personal, grounded. Zero corporate jargon, zero marketing fluff, zero buzzword soup, zero low-level engineering posturing. Talk like a real person sharing an honest project story.
+- Narrative: Frame the core friction as a relatable human experience.
+- Formatting: Clean markdown with bullet points (-), bolding (**).
 
 ### JSON Schema:
 {
   "slug": "<lowercase-kebab-case-slug>",
-  "title": "<Punchy Project Name>",
-  "tagline": "<One-sentence technical value proposition under 120 chars>",
-  "description": "<2-4 bullet points highlighting the core mission and innovation>",
+  "title": "<Punchy, clean Project Name>",
+  "tagline": "<One plain-English sentence capturing the human benefit under 120 chars>",
+  "description": "<2-4 conversational bullet points highlighting the real-world friction and what the product does for the user>",
   "status": "<'Production' | 'Live' | 'Prototype' | 'Internal' | 'Hackathon'>",
   "tags": ["<Array of: 'AI', 'XR', 'Design Systems', 'Chrome Extensions', 'Agents', 'Automation', 'Research', 'Product', '3D', 'WebGL', 'Mobile'>"],
   "links": {
@@ -45,20 +51,20 @@ Given the raw project context, code snippets, notes, or explanations provided at
     "caseStudy": "<https URL or omit>"
   },
   "slides": [
-    { "id": "slide-1", "type": "problem", "title": "The Problem", "content": "- Specific pain points\\n- Why previous solutions failed\\n- The core tension addressed" },
-    { "id": "slide-2", "type": "why", "title": "Why It Matters", "content": "Why this problem is important now.\\n\\n- The broader paradigm shift.\\n- Developer leverage unlocked." },
-    { "id": "slide-3", "type": "solution", "title": "The Solution", "content": "What was built and how it fundamentally works.\\n\\n- User or developer interface.\\n- Core mechanics." },
-    { "id": "slide-4", "type": "architecture", "title": "Technical Architecture", "content": "Technical stack breakdown and data flow:\\n\\n- Frontend & state\\n- Backend & APIs\\n- Hardest challenge solved" },
-    { "id": "slide-5", "type": "results", "title": "Results & Impact", "content": "- Concrete metrics or qualitative outcomes.\\n- Performance improvements." },
-    { "id": "slide-6", "type": "learnings", "title": "Learnings & Next Steps", "content": "- Key takeaways and skills unlocked.\\n- What's next on the roadmap." }
+    { "id": "slide-1", "type": "problem", "title": "The Problem", "content": "- Everyday frustration or friction in plain language\\n- Why existing tools feel overwhelming or clunky\\n- How people actually feel dealing with this" },
+    { "id": "slide-2", "type": "why", "title": "Why It Matters", "content": "Why this problem deserves attention right now.\\n\\n- Real-world friction or emotional toll.\\n- How fixing this changes daily workflow or peace of mind." },
+    { "id": "slide-3", "type": "solution", "title": "My Approach", "content": "How the experience was designed to feel natural.\\n\\n- The user's point of view.\\n- How the interface guides the user without friction." },
+    { "id": "slide-4", "type": "architecture", "title": "Biggest Challenge", "content": "The hardest part of getting the experience right (product and interaction hurdles):\\n\\n- Figuring out the right mental model or flow\\n- Balancing simplicity with capability" },
+    { "id": "slide-5", "type": "results", "title": "Outcome & Impact", "content": "- How it performs in real hands (daily use, personal testing, peer feedback).\\n- Tangible difference made." },
+    { "id": "slide-6", "type": "learnings", "title": "Skills & Lessons Learned", "content": "- Key takeaways about habits or product design.\\n- Design disciplines or interaction patterns refined." }
   ],
   "questionnaire": {
-    "problem": "<Direct concise summary of the problem>",
-    "whyMattered": "<Direct concise summary of why it mattered>",
-    "howBuilt": "<Technical approach, tools, stack>",
-    "biggestChallenge": "<The hardest technical hurdle>",
-    "outcome": "<The tangible result / metric>",
-    "improveNext": "<Skills unlocked or next improvements>"
+    "problem": "<Direct plain-English summary of the human friction>",
+    "whyMattered": "<Why this matters for everyday people or users>",
+    "howBuilt": "<Design approach, prototyping tools, and practical build stack>",
+    "biggestChallenge": "<The hardest interaction, design, or user experience hurdle>",
+    "outcome": "<The real-world outcome, usage, or feedback>",
+    "improveNext": "<Design skills unlocked and planned user-facing refinements>"
   },
   "date": "YYYY-MM-DD",
   "featured": false,
@@ -67,16 +73,18 @@ Given the raw project context, code snippets, notes, or explanations provided at
 
 ### Constraints:
 1. Return ONLY the raw JSON object inside a \`\`\`json\`\`\` code block.
-2. Ensure valid JSON syntax with properly escaped strings.
+2. Plain language only: if a 12-year-old or non-tech friend wouldn't understand a phrase, rephrase it around human experience and design intent.
+3. Ensure valid JSON syntax with properly escaped strings.
 
 ---
 ### [PASTE YOUR RAW PROJECT CONTEXT HERE]
-- Project Name: 
-- What does it do?
-- What tech stack / tools were used?
-- What was the hardest problem solved?
-- Links (GitHub, demo, etc.):
-- Any raw brainstorm notes, README text, or terminal outputs:
+- Project Name / Idea:
+- What real-world problem or frustration did you notice?
+- Who did you design this for, and how does the experience work?
+- What tools / stack did you use to build it?
+- What was the hardest design or product hurdle to get right?
+- What were the results or user reactions?
+- Any rough notes, sketches, thoughts, or reflections:
 `
 
 export default function AdminPage() {
