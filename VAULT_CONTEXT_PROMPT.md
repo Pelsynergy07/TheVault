@@ -62,8 +62,8 @@ The output must be a single JSON object with the following structure:
     {
       "id": "slide-3",
       "type": "solution",
-      "title": "My Approach",
-      "content": "How the experience was designed to feel natural.\n\n- How it works from the user's point of view (e.g. conversation instead of tedious forms, quiet simplicity over cluttered dashboards).\n- How the interface guides the user naturally without friction."
+      "title": "What I Actually Built",
+      "content": "Describe what was actually built and the tangible features created:\n\n- Walk through the real features you built from a user perspective (e.g. additional group sync mode for friends, ambient floating tray, offline hotkey toggle, collaborative sharing).\n- Focus on what the tool actually lets people DO rather than abstract tech specs or architecture.\n- How the flow feels when someone actually sits down and uses it."
     },
     {
       "id": "slide-4",
@@ -87,7 +87,7 @@ The output must be a single JSON object with the following structure:
   "questionnaire": {
     "problem": "<Direct plain-English summary of the human friction>",
     "whyMattered": "<Why this matters for everyday people or users>",
-    "howBuilt": "<Design approach, prototyping tools, and practical build stack>",
+    "howBuilt": "<What was actually built: concrete features created (e.g. group sync mode for friends, ambient tray), flow, and practical tools>",
     "biggestChallenge": "<The hardest interaction, design, or user experience hurdle>",
     "outcome": "<The real-world outcome, usage, or feedback>",
     "improveNext": "<Design skills unlocked and planned user-facing refinements>"
